@@ -121,13 +121,13 @@ def get_db_connection():
 async def root():
     return {"message": "Project Tracker API"}
 
-@app.get("/projects", response_model=List[ProjectResponse])
+@app.get("/projects")
 async def get_projects():
     conn = get_db_connection()
     cursor = conn.cursor()
     
     # Get all projects
-    cursor.execute("SELECT * FROM projects ORDER BY updated_at DESC")
+    cursor.execute("SELECT * FROM project ORDER BY date_started DESC")
     projects = cursor.fetchall()
     
     result = []
@@ -135,17 +135,18 @@ async def get_projects():
         project_dict = dict(project)
         
         # Get tasks for this project
-        cursor.execute("SELECT * FROM tasks WHERE project_id = ?", (project['id'],))
+        cursor.execute("SELECT * FROM task WHERE project_id = ?", (project['id'],))
         tasks = [dict(task) for task in cursor.fetchall()]
         
         # Get updates for this project
-        cursor.execute("SELECT * FROM updates WHERE project_id = ? ORDER BY date DESC", (project['id'],))
-        updates = [dict(update) for update in cursor.fetchall()]
+        # cursor.execute("SELECT * FROM updates WHERE project_id = ? ORDER BY date DESC", (project['id'],))
+        # updates = [dict(update) for update in cursor.fetchall()]
+        updates = []
         
         project_dict['tasks'] = tasks
         project_dict['updates'] = updates
         result.append(project_dict)
-    
+    print(result)
     conn.close()
     return result
 
