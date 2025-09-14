@@ -5,9 +5,11 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Project Tracker</title>
+        <script src="task.js" ></script>
+        <link rel="stylesheet" href="task.css">
         <script src="popup.js" ></script>
-        <script src="index.js" ></script>
         <link rel="stylesheet" href="popup.css">
+        <script src="index.js" ></script>
         <link rel="stylesheet" href="index.css">
     </head>
     <body>
@@ -90,24 +92,97 @@
 
 
 
-
-    <div id="popupOverlay" class="popup-overlay" onclick="closePopup(event)">
-        <div class="popup" onclick="event.stopPropagation()">
-            <div id="popupHeader" class="popup-header">
-                <button class="popup-close" onclick="closePopup()">&times;</button>
-                <span id="popupIcon" class="popup-icon">✓</span>
-                <h3 id="popupTitle" class="popup-title">Success!</h3>
-            </div>
-            <div class="popup-body">
-                <p id="popupMessage" class="popup-message">Operation completed successfully!</p>
-                <div class="popup-buttons">
-                    <button id="popupPrimaryBtn" class="popup-btn primary" onclick="closePopup()">OK</button>
-                    <button id="popupSecondaryBtn" class="popup-btn secondary" onclick="closePopup()" style="display: none;">Cancel</button>
+<!-- success popup -->
+        <div id="popupOverlay" class="popup-overlay" onclick="closePopup(event)">
+            <div class="popup" onclick="event.stopPropagation()">
+                <div id="popupHeader" class="popup-header">
+                    <button class="popup-close" onclick="closePopup()">&times;</button>
+                    <span id="popupIcon" class="popup-icon">✓</span>
+                    <h3 id="popupTitle" class="popup-title">Success!</h3>
+                </div>
+                <div class="popup-body">
+                    <p id="popupMessage" class="popup-message">Operation completed successfully!</p>
+                    <div class="popup-buttons">
+                        <button id="popupPrimaryBtn" class="popup-btn primary" onclick="closePopup()">OK</button>
+                        <button id="popupSecondaryBtn" class="popup-btn secondary" onclick="closePopup()" style="display: none;">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-     <div id="toastContainer" class="toast-container"></div>
+        <div id="toastContainer" class="toast-container"></div>
+<!-- task update -->
+        <div id="updatePopupOverlay" class="popup-overlay" onclick="closeUpdateForm(event)">
+            <div class="update-popup" onclick="event.stopPropagation()">
+                <div class="popup-header">
+                    <button class="popup-close" onclick="closeUpdateForm()">&times;</button>
+                    <h3 class="popup-title">Update Record</h3>
+                    <p class="popup-subtitle">Edit the record details below</p>
+                </div>
+                
+                <div class="form-container">
+                    <form id="updateForm">
+                        <!-- Hidden ID field -->
+                        <input type="hidden" id="recordId" name="id">
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required" for="projectId">Project ID</label>
+                                <input type="number" id="projectId" name="project_id" class="form-input" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="occurancesId">Occurrences ID</label>
+                                <input type="number" id="occurancesId" name="occurances_id" class="form-input">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label class="form-label required" for="recordName">Name</label>
+                                <input type="text" id="recordName" name="name" class="form-input" required maxlength="255">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label class="form-label" for="recordDescription">Description</label>
+                                <textarea id="recordDescription" name="description" class="form-textarea" placeholder="Enter task description..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="startDate">Start Date</label>
+                                <input type="date" id="startDate" name="start_date" class="form-input">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="endDate">End Date</label>
+                                <input type="date" id="endDate" name="end_date" class="form-input">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label class="form-label" for="recordStatus">Status</label>
+                                <select id="recordStatus" name="status" class="form-select">
+                                    <option value="not_started">Not Started</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="on_hold">On Hold</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-danger" onclick="deleteRecord()">
+                                <span class="loading-spinner" id="deleteSpinner"></span>
+                                Delete
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="closeUpdateForm()">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="loading-spinner" id="updateSpinner"></span>
+                                Update Record
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
     </body>
     

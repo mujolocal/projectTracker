@@ -56,7 +56,7 @@ function renderProjects(projects) {
                     <div class="tasks-section">
                         <div class="section-title">Tasks (${project.tasks.length})</div>
                         ${project.tasks.slice(0, 3).map(task => `
-                            <div class="task-item">
+                            <button class="task-item"  onclick="updateTask(${task.id})">
                                 <div>
                                     <div>${task.name}</div>
                                     ${task.start_date || task.end_date ? `
@@ -67,7 +67,7 @@ function renderProjects(projects) {
                                     ` : ''}
                                 </div>
                                 <span class="status-badge status-${task.status.replace('_', '-')}">${task.status.replace('_', ' ')}</span>
-                            </div>
+                            </button>
                         `).join('')}
                         ${project.tasks.length > 3 ? `<div style="text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;">+${project.tasks.length - 3} more</div>` : ''}
                     </div>
@@ -91,6 +91,9 @@ function renderProjects(projects) {
             `).join('')}
         </div>
     `;
+}
+function updateTask(id){
+    console.log(`this is the id ${id}`)
 }
 
 function formatDate(dateString) {

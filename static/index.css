@@ -156,6 +156,7 @@
 
             .task-item {
                 display: flex;
+                width: -moz-available;
                 justify-content: space-between;
                 align-items: center;
             }
