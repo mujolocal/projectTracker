@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional
@@ -35,11 +36,11 @@ def init_db():
             date_started TEXT,
             date_complete TEXT,
             completion_status TEXT DEFAULT 'not_started',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     
-    # Features table
+    # tasks table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS task (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,15 +81,13 @@ def init_db():
 init_db()
 
 # Pydantic models
-class Feature(BaseModel):
-    id: Optional[int] = None
+class Task(BaseModel):
     name: str
     start_date: Optional[str] = None
     description: str
     status: str = "not_started"
 
 class Update(BaseModel):
-    id: Optional[int] = None
     note: str
     date: str
 
@@ -97,7 +96,7 @@ class Project(BaseModel):
     date_created: str
     status: str = "not_started"
     description: str 
-    features: List[Feature] = []
+    tasks: List[Task] = []
     updates: List[Update] = []
 
 class ProjectResponse(BaseModel):
@@ -105,7 +104,7 @@ class ProjectResponse(BaseModel):
     name: str
     date_started: str
     completion_status: str
-    features: List[Feature] = []
+    tasks: List[Task] = []
     updates: List[Update] = []
     created_at: str
     updated_at: str
@@ -135,15 +134,15 @@ async def get_projects():
     for project in projects:
         project_dict = dict(project)
         
-        # Get features for this project
-        cursor.execute("SELECT * FROM features WHERE project_id = ?", (project['id'],))
-        features = [dict(feature) for feature in cursor.fetchall()]
+        # Get tasks for this project
+        cursor.execute("SELECT * FROM tasks WHERE project_id = ?", (project['id'],))
+        tasks = [dict(task) for task in cursor.fetchall()]
         
         # Get updates for this project
         cursor.execute("SELECT * FROM updates WHERE project_id = ? ORDER BY date DESC", (project['id'],))
         updates = [dict(update) for update in cursor.fetchall()]
         
-        project_dict['features'] = features
+        project_dict['tasks'] = tasks
         project_dict['updates'] = updates
         result.append(project_dict)
     
@@ -165,15 +164,15 @@ async def get_project(project_id: int):
     
     project_dict = dict(project)
     
-    # Get features
-    cursor.execute("SELECT * FROM features WHERE project_id = ?", (project_id,))
-    features = [dict(feature) for feature in cursor.fetchall()]
+    # Get tasks
+    cursor.execute("SELECT * FROM tasks WHERE project_id = ?", (project_id,))
+    tasks = [dict(task) for task in cursor.fetchall()]
     
     # Get updates
     cursor.execute("SELECT * FROM updates WHERE project_id = ? ORDER BY date DESC", (project_id,))
     updates = [dict(update) for update in cursor.fetchall()]
     
-    project_dict['features'] = features
+    project_dict['tasks'] = tasks
     project_dict['updates'] = updates
     
     conn.close()
@@ -184,27 +183,30 @@ async def get_project(project_id: int):
 async def orchestrate_project(project:Project):
     print(project)
     updates = project.updates
-    features = project.features
+    tasks = project.tasks
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(""""
-                       INSERT INTO project(name, date_created, status, description) 
-                       VALUES(:name, :date_created, :status, :description)
+        cursor.execute("""
+                       INSERT INTO project(name,  completion_status, description) 
+                       VALUES(:name, :completion_status, :description)
                        """
-                       ,{'name':project.name,"date_create":project.date_created, "status":project.status, "description":project.description})
+                       ,{'name':project.name, "completion_status":project.status, "description":project.description})
         project_id = cursor.lastrowid
-        for feature in features:
-            cursor.execute("INSERT INTO feature(name,start_date,status,description, project_id) VALUES(:name,:start_date,:status,:description, :project_id)"
-                           , {"name":feature.name,"start_date":feature.start_date,"status":feature.status,"description":feature.description, "project_id":project_id})
+        for task in tasks:
+            cursor.execute("INSERT INTO task(name,start_date,status,description, project_id) VALUES(:name,:start_date,:status,:description, :project_id)"
+                           , {"name":task.name,"start_date":task.start_date,"status":task.status,"description":task.description, "project_id":project_id})
         conn.commit()
-    except:
+        return JSONResponse(content={"message": "Item created"}, status_code=201)
+    except Exception as e:
         if conn != None:
             conn.rollback()
+        return JSONResponse(content={"error": str(e)}, status_code=500)
     finally:
         if conn != None:
             conn.close()
+    
             
 
     # cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
@@ -213,7 +215,7 @@ async def orchestrate_project(project:Project):
     #     print(table['name'])
     # create project
     # get project id
-    # add features
+    # add tasks
     # add updates
     # rollback all on failure
     # return 201 on success
@@ -238,7 +240,7 @@ async def orchestrate_project(project:Project):
 #     created_project = cursor.fetchone()
     
 #     result = dict(created_project)
-#     result['features'] = []
+#     result['tasks'] = []
 #     result['updates'] = []
     
 #     conn.close()
@@ -281,9 +283,9 @@ async def orchestrate_project(project:Project):
     
 #     return {"message": "Project deleted successfully"}
 
-# Feature routes
-# @app.post("/projects/{project_id}/features")
-# async def add_feature(project_id: int, feature: Feature):
+# task routes
+# @app.post("/projects/{project_id}/tasks")
+# async def add_task(project_id: int, task: task):
 #     conn = get_db_connection()
 #     cursor = conn.cursor()
     
@@ -294,51 +296,51 @@ async def orchestrate_project(project:Project):
 #         raise HTTPException(status_code=404, detail="Project not found")
     
 #     cursor.execute("""
-#         INSERT INTO features (project_id, name, start_date, end_date, status)
+#         INSERT INTO tasks (project_id, name, start_date, end_date, status)
 #         VALUES (?, ?, ?, ?, ?)
-#     """, (project_id, feature.name, feature.start_date, feature.end_date, feature.status))
+#     """, (project_id, task.name, task.start_date, task.end_date, task.status))
     
-#     feature_id = cursor.lastrowid
+#     task_id = cursor.lastrowid
 #     conn.commit()
 #     conn.close()
     
-#     return {"id": feature_id, "message": "Feature added successfully"}
+#     return {"id": task_id, "message": "task added successfully"}
 
-# @app.put("/projects/{project_id}/features/{feature_id}")
-# async def update_feature(project_id: int, feature_id: int, feature: Feature):
+# @app.put("/projects/{project_id}/tasks/{task_id}")
+# async def update_task(project_id: int, task_id: int, task: task):
 #     conn = get_db_connection()
 #     cursor = conn.cursor()
     
 #     cursor.execute("""
-#         UPDATE features 
+#         UPDATE tasks 
 #         SET name = ?, start_date = ?, end_date = ?, status = ?
 #         WHERE id = ? AND project_id = ?
-#     """, (feature.name, feature.start_date, feature.end_date, feature.status, feature_id, project_id))
+#     """, (task.name, task.start_date, task.end_date, task.status, task_id, project_id))
     
 #     if cursor.rowcount == 0:
 #         conn.close()
-#         raise HTTPException(status_code=404, detail="Feature not found")
+#         raise HTTPException(status_code=404, detail="task not found")
     
 #     conn.commit()
 #     conn.close()
     
-#     return {"message": "Feature updated successfully"}
+#     return {"message": "task updated successfully"}
 
-# @app.delete("/projects/{project_id}/features/{feature_id}")
-# async def delete_feature(project_id: int, feature_id: int):
+# @app.delete("/projects/{project_id}/tasks/{task_id}")
+# async def delete_task(project_id: int, task_id: int):
 #     conn = get_db_connection()
 #     cursor = conn.cursor()
     
-#     cursor.execute("DELETE FROM features WHERE id = ? AND project_id = ?", (feature_id, project_id))
+#     cursor.execute("DELETE FROM tasks WHERE id = ? AND project_id = ?", (task_id, project_id))
     
 #     if cursor.rowcount == 0:
 #         conn.close()
-#         raise HTTPException(status_code=404, detail="Feature not found")
+#         raise HTTPException(status_code=404, detail="task not found")
     
 #     conn.commit()
 #     conn.close()
     
-#     return {"message": "Feature deleted successfully"}
+#     return {"message": "task deleted successfully"}
 
 # Update routes
 # @app.post("/projects/{project_id}/updates")

@@ -1,7 +1,7 @@
 console.log("we got this");
 const API_BASE = 'http://localhost:8000';
 let currentProject = null;
-let features = [];
+let tasks = [];
 let updates = [];
 
 // Load projects on page load
@@ -19,10 +19,10 @@ async function loadProjects() {
     }
 }
 
-function removeFeature(id){
-    console.log(`the feature to be removed is ${id}`)
-    features.pop(id)
-    renderFeaturesList();
+function removeTask(id){
+    console.log(`the task to be removed is ${id}`)
+    tasks.pop(id)
+    rendertasksList();
     
 }
 
@@ -53,23 +53,23 @@ function renderProjects(projects) {
                         </span>
                     </div>
 
-                    <div class="features-section">
-                        <div class="section-title">Features (${project.features.length})</div>
-                        ${project.features.slice(0, 3).map(feature => `
-                            <div class="feature-item">
+                    <div class="tasks-section">
+                        <div class="section-title">Tasks (${project.tasks.length})</div>
+                        ${project.tasks.slice(0, 3).map(task => `
+                            <div class="task-item">
                                 <div>
-                                    <div>${feature.name}</div>
-                                    ${feature.start_date || feature.end_date ? `
-                                        <div class="feature-dates">
-                                            ${feature.start_date ? formatDate(feature.start_date) : 'Not started'} - 
-                                            ${feature.end_date ? formatDate(feature.end_date) : 'Ongoing'}
+                                    <div>${task.name}</div>
+                                    ${task.start_date || task.end_date ? `
+                                        <div class="task-dates">
+                                            ${task.start_date ? formatDate(task.start_date) : 'Not started'} - 
+                                            ${task.end_date ? formatDate(task.end_date) : 'Ongoing'}
                                         </div>
                                     ` : ''}
                                 </div>
-                                <span class="status-badge status-${feature.status.replace('_', '-')}">${feature.status.replace('_', ' ')}</span>
+                                <span class="status-badge status-${task.status.replace('_', '-')}">${task.status.replace('_', ' ')}</span>
                             </div>
                         `).join('')}
-                        ${project.features.length > 3 ? `<div style="text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;">+${project.features.length - 3} more</div>` : ''}
+                        ${project.tasks.length > 3 ? `<div style="text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;">+${project.tasks.length - 3} more</div>` : ''}
                     </div>
 
                     <div class="updates-section">
@@ -99,12 +99,12 @@ function formatDate(dateString) {
 
 function openNewProjectModal() {
     currentProject = null;
-    features = [];
+    tasks = [];
     updates = [];
     document.getElementById('projectModalTitle').textContent = 'New Project';
     document.getElementById('projectForm').reset();
     document.getElementById('projectDateCreated').value = new Date().toISOString().split('T')[0];
-    renderFeaturesList();
+    rendertasksList();
     // renderUpdatesList();
     document.getElementById('projectModal').style.display = 'block';
 }
@@ -113,7 +113,7 @@ const orchestrateNewProject=(event)=>{
     event.preventDefault();
     const formData = new FormData(event.target);
     const jsonData = Object.fromEntries(formData.entries());
-    jsonData["features"] = features;
+    jsonData["tasks"] = tasks;
     jsonData["updates"] = updates;
     console.log(jsonData);
     fetch("http://127.0.0.1:8000/orchestrateProjects",{
@@ -130,7 +130,7 @@ async function editProject(projectId) {
         const project = await response.json();
         
         currentProject = project;
-        features = [...project.features];
+        tasks = [...project.tasks];
         updates = [...project.updates];
         
         document.getElementById('projectModalTitle').textContent = 'Edit Project';
@@ -138,7 +138,7 @@ async function editProject(projectId) {
         document.getElementById('projectDateCreated').value = project.date_created;
         document.getElementById('projectStatus').value = project.completion_status;
         
-        renderFeaturesList();
+        rendertasksList();
         // renderUpdatesList();
         document.getElementById('projectModal').style.display = 'block';
     } catch (error) {
@@ -151,20 +151,22 @@ function closeProjectModal() {
     document.getElementById('projectModal').style.display = 'none';
 }
 
-function addFeature() {
-    const name = prompt('Feature name:');
+function addtask() {
+    const name = prompt('task name:');
     if (name) {
         const startDate = prompt('Start date (YYYY-MM-DD, optional):');
         const endDate = prompt('End date (YYYY-MM-DD, optional):');
         const status = prompt('Status (not_started/in_progress/completed):', 'not_started');
+        const description = prompt('Description', 'None');
         
-        features.push({
+        tasks.push({
             name,
             start_date: startDate || null,
             end_date: endDate || null,
-            status: status || 'not_started'
+            status: status || 'not_started',
+            description: description
         });
-        renderFeaturesList();
+        rendertasksList();
     }
 }
 
@@ -182,19 +184,22 @@ function addUpdate() {
     }
 }
 
-function renderFeaturesList() {
-    const container = document.getElementById('featuresList');
-    container.innerHTML = features.map((feature, index) => `
+function rendertasksList() {
+    const container = document.getElementById('tasksList');
+    container.innerHTML = tasks.map((task, index) => `
         <div class="list-item">
             <div>
-                <strong>${feature.name}</strong>
+                <strong>${task.name}</strong>
                 <div style="font-size: 0.8rem; color: #6c757d;">
-                    ${feature.start_date ? formatDate(feature.start_date) : 'No start'} - 
-                    ${feature.end_date ? formatDate(feature.end_date) : 'No end'} | 
-                    Status: ${feature.status.replace('_', ' ')}
+                    ${task.start_date ? formatDate(task.start_date) : 'No start'} - 
+                    ${task.end_date ? formatDate(task.end_date) : 'No end'} | 
+                    Status: ${task.status.replace('_', ' ')}
                 </div>
+                <p>
+                    ${task.description}
+                </p>
             </div>
-            <button  class="btn btn-danger small-btn" type="button" onclick="removeFeature(${index})">Remove</button>
+            <button  class="btn btn-danger small-btn" type="button" onclick="removetask(${index})">Remove</button>
         </div>
-    `).join('') || '<div style="text-align: center; color: #6c757d; padding: 1rem;">No features added yet</div>';
+    `).join('') || '<div style="text-align: center; color: #6c757d; padding: 1rem;">No tasks added yet</div>';
 }
