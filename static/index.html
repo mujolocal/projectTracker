@@ -1,329 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Project Tracker</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: #f5f7fa;
-                color: #333;
-                line-height: 1.6;
-            }
-
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 20px;
-            }
-
-            header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 2rem 0;
-                margin-bottom: 2rem;
-                border-radius: 10px;
-                text-align: center;
-            }
-
-            header h1 {
-                font-size: 2.5rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .controls {
-                display: flex;
-                gap: 1rem;
-                margin-bottom: 2rem;
-                flex-wrap: wrap;
-            }
-
-            .btn {
-                background: #667eea;
-                color: white;
-                border: none;
-                padding: 0.75rem 1.5rem;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 1rem;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-
-            .btn:hover {
-                background: #5a6fd8;
-                transform: translateY(-2px);
-            }
-
-            .btn-danger {
-                background: #e74c3c;
-            }
-
-            .btn-danger:hover {
-                background: #c0392b;
-            }
-
-            .btn-success {
-                background: #27ae60;
-            }
-
-            .btn-success:hover {
-                background: #219a52;
-            }
-
-            .projects-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-                gap: 2rem;
-            }
-
-            .project-card {
-                background: white;
-                border-radius: 12px;
-                padding: 1.5rem;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: transform 0.3s ease;
-            }
-
-            .project-card:hover {
-                transform: translateY(-5px);
-            }
-
-            .project-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 1rem;
-            }
-
-            .project-title {
-                font-size: 1.4rem;
-                font-weight: bold;
-                color: #2c3e50;
-                margin-bottom: 0.5rem;
-            }
-
-            .project-date {
-                color: #7f8c8d;
-                font-size: 0.9rem;
-            }
-
-            .status-badge {
-                padding: 0.25rem 0.75rem;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                font-weight: bold;
-                text-transform: uppercase;
-            }
-
-            .status-not-started {
-                background: #ecf0f1;
-                color: #7f8c8d;
-            }
-
-            .status-in-progress {
-                background: #fff3cd;
-                color: #856404;
-            }
-
-            .status-completed {
-                background: #d4edda;
-                color: #155724;
-            }
-
-            .tasks-section, .updates-section {
-                margin-top: 1rem;
-            }
-
-            .section-title {
-                font-weight: bold;
-                margin-bottom: 0.5rem;
-                color: #34495e;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .task-item, .update-item {
-                background: #f8f9fa;
-                padding: 0.75rem;
-                border-radius: 6px;
-                margin-bottom: 0.5rem;
-                border-left: 4px solid #667eea;
-            }
-
-            .task-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .task-dates {
-                font-size: 0.8rem;
-                color: #6c757d;
-                margin-top: 0.25rem;
-            }
-
-            .update-item {
-                border-left-color: #27ae60;
-            }
-
-            .update-date {
-                font-size: 0.8rem;
-                color: #6c757d;
-                font-weight: bold;
-            }
-
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-            }
-
-            .modal-content {
-                background-color: white;
-                margin: 5% auto;
-                padding: 2rem;
-                border-radius: 12px;
-                width: 90%;
-                max-width: 600px;
-                max-height: 90vh;
-                overflow-y: auto;
-            }
-
-            .modal-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1.5rem;
-            }
-
-            .close {
-                color: #aaa;
-                font-size: 2rem;
-                cursor: pointer;
-            }
-
-            .close:hover {
-                color: #000;
-            }
-
-            .form-group {
-                margin-bottom: 1rem;
-            }
-
-            .form-group label {
-                display: block;
-                margin-bottom: 0.5rem;
-                font-weight: bold;
-            }
-
-            .form-control {
-                width: 100%;
-                padding: 0.75rem;
-                border: 2px solid #e9ecef;
-                border-radius: 6px;
-                font-size: 1rem;
-                transition: border-color 0.3s ease;
-            }
-            .form-description{
-                height: 3em;
-            }
-
-            .form-control:focus {
-                outline: none;
-                border-color: #667eea;
-            }
-
-            .form-row {
-                display: flex;
-                gap: 1rem;
-            }
-
-            .form-row .form-group {
-                flex: 1;
-            }
-
-            textarea.form-control {
-                min-height: 100px;
-                resize: vertical;
-            }
-
-            .item-list {
-                max-height: 300px;
-                overflow-y: auto;
-                border: 1px solid #e9ecef;
-                border-radius: 6px;
-                padding: 1rem;
-            }
-
-            .list-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem;
-                border-bottom: 1px solid #e9ecef;
-            }
-
-            .list-item:last-child {
-                border-bottom: none;
-            }
-
-            .small-btn {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.8rem;
-                border-radius: 4px;
-            }
-
-            .loading {
-                text-align: center;
-                padding: 2rem;
-                color: #6c757d;
-            }
-
-            .empty-state {
-                text-align: center;
-                padding: 3rem;
-                color: #6c757d;
-            }
-
-            .empty-state h3 {
-                margin-bottom: 1rem;
-            }
-
-            @media (max-width: 768px) {
-                .container {
-                    padding: 10px;
-                }
-                
-                .projects-grid {
-                    grid-template-columns: 1fr;
-                }
-                
-                .modal-content {
-                    margin: 10% auto;
-                    padding: 1rem;
-                }
-                
-                .form-row {
-                    flex-direction: column;
-                }
-            }
-        </style>
+        <script src="popup.js" ></script>
+        <script src="index.js" ></script>
+        <link rel="stylesheet" href="popup.css">
+        <link rel="stylesheet" href="index.css">
     </head>
     <body>
         <div class="container">
@@ -401,8 +86,31 @@
                 </form>
             </div>
         </div>
+
+
+
+
+
+    <div id="popupOverlay" class="popup-overlay" onclick="closePopup(event)">
+        <div class="popup" onclick="event.stopPropagation()">
+            <div id="popupHeader" class="popup-header">
+                <button class="popup-close" onclick="closePopup()">&times;</button>
+                <span id="popupIcon" class="popup-icon">✓</span>
+                <h3 id="popupTitle" class="popup-title">Success!</h3>
+            </div>
+            <div class="popup-body">
+                <p id="popupMessage" class="popup-message">Operation completed successfully!</p>
+                <div class="popup-buttons">
+                    <button id="popupPrimaryBtn" class="popup-btn primary" onclick="closePopup()">OK</button>
+                    <button id="popupSecondaryBtn" class="popup-btn secondary" onclick="closePopup()" style="display: none;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+     <div id="toastContainer" class="toast-container"></div>
+
     </body>
-    <script src="index.js" ></script>
+    
 </html>
 
 

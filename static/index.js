@@ -120,6 +120,12 @@ const orchestrateNewProject=(event)=>{
         method: "POST"
         ,headers:{"Content-Type":"application/json"}
         , body:JSON.stringify(jsonData)
+    }).then((r)=>{
+        showPopup('success', 'Your project has been created. now go get it done', 'good for you');
+        closeProjectModal()
+        loadProjects()
+    }).catch((e)=>{
+        showPopup('error', 'Something failed:', `${e}`);
     })
 }
 
@@ -203,3 +209,7 @@ function rendertasksList() {
         </div>
     `).join('') || '<div style="text-align: center; color: #6c757d; padding: 1rem;">No tasks added yet</div>';
 }
+$(document).ready(function() {
+    console.log("ready steady");
+    loadProjects();
+});
