@@ -19,6 +19,13 @@ async function loadProjects() {
     }
 }
 
+function removeFeature(id){
+    console.log(`the feature to be removed is ${id}`)
+    features.pop(id)
+    renderFeaturesList();
+    
+}
+
 function renderProjects(projects) {
     const container = document.getElementById('projects-container');
     
@@ -39,7 +46,7 @@ function renderProjects(projects) {
                     <div class="project-header">
                         <div>
                             <div class="project-title">${project.name}</div>
-                            <div class="project-date">Started: ${formatDate(project.date_started)}</div>
+                            <div class="project-date">Started: ${formatDate(project.date_created)}</div>
                         </div>
                         <span class="status-badge status-${project.completion_status.replace('_', '-')}">
                             ${project.completion_status.replace('_', ' ')}
@@ -96,7 +103,7 @@ function openNewProjectModal() {
     updates = [];
     document.getElementById('projectModalTitle').textContent = 'New Project';
     document.getElementById('projectForm').reset();
-    document.getElementById('projectDateStarted').value = new Date().toISOString().split('T')[0];
+    document.getElementById('projectDateCreated').value = new Date().toISOString().split('T')[0];
     renderFeaturesList();
     // renderUpdatesList();
     document.getElementById('projectModal').style.display = 'block';
@@ -128,7 +135,7 @@ async function editProject(projectId) {
         
         document.getElementById('projectModalTitle').textContent = 'Edit Project';
         document.getElementById('projectName').value = project.name;
-        document.getElementById('projectDateStarted').value = project.date_started;
+        document.getElementById('projectDateCreated').value = project.date_created;
         document.getElementById('projectStatus').value = project.completion_status;
         
         renderFeaturesList();
@@ -152,7 +159,6 @@ function addFeature() {
         const status = prompt('Status (not_started/in_progress/completed):', 'not_started');
         
         features.push({
-            id: Date.now(), // Temporary ID for new features
             name,
             start_date: startDate || null,
             end_date: endDate || null,
@@ -188,7 +194,7 @@ function renderFeaturesList() {
                     Status: ${feature.status.replace('_', ' ')}
                 </div>
             </div>
-            <button  class="btn btn-danger small-btn" onclick="removeFeature(${index})">Remove</button>
+            <button  class="btn btn-danger small-btn" type="button" onclick="removeFeature(${index})">Remove</button>
         </div>
     `).join('') || '<div style="text-align: center; color: #6c757d; padding: 1rem;">No features added yet</div>';
 }

@@ -240,6 +240,9 @@
                 font-size: 1rem;
                 transition: border-color 0.3s ease;
             }
+            .form-description{
+                height: 3em;
+            }
 
             .form-control:focus {
                 outline: none;
@@ -357,10 +360,14 @@
                         <label for="projectName">Project Name:</label>
                         <input type="text" id="projectName" name="name" class="form-control" required>
                     </div>
+                    <div class="form-group">
+                        <label for="projectDescription">Description:</label>
+                        <textarea rows="3" cols="30"  id="projectDescription" name="description" class="form-control form-description" required></textarea>
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="projectDateStarted">Date Started:</label>
-                            <input type="date" id="projectDateStarted" name="date_started" class="form-control" required>
+                            <label for="projectDateCreated">Date Created:</label>
+                            <input type="date" id="projectDateCreated" name="date_created" class="form-control" >
                         </div>
                         <div class="form-group">
                             <label for="projectStatus">Status:</label>
