@@ -1,5 +1,5 @@
 console.log("we got this");
-const API_BASE = 'http://localhost:8000';
+var API_BASE = 'http://localhost:8000';
 let currentProject = null;
 let tasks = [];
 let updates = [];
@@ -56,7 +56,7 @@ function renderProjects(projects) {
                     <div class="tasks-section">
                         <div class="section-title">Tasks (${project.tasks.length})</div>
                         ${project.tasks.slice(0, 3).map(task => `
-                            <button class="task-item"  onclick="updateTask(${task.id})">
+                            <button class="task-item"  onclick="openUpdateForm(${task.id})">
                                 <div>
                                     <div>${task.name}</div>
                                     ${task.start_date || task.end_date ? `

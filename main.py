@@ -207,6 +207,26 @@ async def orchestrate_project(project:Project):
     finally:
         if conn != None:
             conn.close()
+
+@app.get("/task/{id}")
+async def get_task(id:int):
+    print("this is the id ",id)
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""SELECT * FROM task WHERE ID=:id""",{"id":id})
+        task = cursor.fetchone()
+        columns = [col[0] for col in cursor.description]
+        task_dict = dict(zip(columns, task))
+        return JSONResponse(content=task_dict, status_code=200)
+    except Exception as e:
+        if conn != None:
+            conn.rollback()
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+    finally:
+        if conn != None:
+            conn.close()
     
             
 
