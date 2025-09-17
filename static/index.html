@@ -111,10 +111,10 @@
 <!-- task update -->
 
 
-        <div id="updatePopupOverlay" class="popup-overlay" onclick="closeUpdateForm(event)">
+        <div id="updatePopupOverlay" class="popup-overlay" >
             <div class="update-popup" onclick="event.stopPropagation()">
                 <div class="popup-header">
-                    <button class="popup-close" onclick="closeUpdateForm()">&times;</button>
+                    <button class="popup-close" id="updateFormXbutton">&times;</button>
                     <h3 class="popup-title">Update Task</h3>
                 </div>
                 
@@ -158,7 +158,7 @@
                         </div>
                         
                         <div class="form-actions">
-                            <button type="button" class="btn btn-danger" onclick="closeUpdateForm()">
+                            <button type="button" id="closeUpdateTaskButton" class="btn btn-danger" >
                                 <span class="loading-spinner" id="deleteSpinner"></span>
                                 Cancel
                             </button>

@@ -1,6 +1,7 @@
 import {getStatusColor} from './utilities.js';
 import { API_BASE } from './constants.js';
 import { formatDate, addClick } from './utilities.js';
+import { showPopup } from './popup.js';
 
 let currentRecordId = null;
 let independentTasks = []
@@ -186,3 +187,6 @@ const  createTaskCard=(task)=> {
 
 const updateTaskButton = document.getElementById('updateTaskButton')
 updateTaskButton.addEventListener('click', updateTask);
+addClick("updatePopupOverlay",closeUpdateForm );
+addClick("updateFormXbutton",closeUpdateForm );
+addClick("closeUpdateTaskButton",closeUpdateForm );
