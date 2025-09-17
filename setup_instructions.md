@@ -4,21 +4,30 @@ This project is basically my own personalized application, made for my brain. If
 
 ## Features
 1. tasks: a task is the basic unit of completion. Tasks can be created and updated. 
-Coming Soon:
+Coming Soon **in no specific order** :
 1. notes
 2. projects
 3. lists
 4. notifications
 5. reucurring tasks
+6. Authentication
 
-### 1. Setup
+### Stack
+Python3
+FastAPI
+SQLite
+JavaScript
+HTML
+CSS
+
+###  Setup
 
 ```bash
 pip install -r requirements_file.txt
 
 ```
 
-### 4. Run the Application
+###  Run the Application
 
 ```bash
 uvicorn main:app --reload
