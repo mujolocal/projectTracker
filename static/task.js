@@ -33,33 +33,6 @@ function closeUpdateForm(event) {
     currentRecordId = null;
 }
 
-
-
-// Toast notifications
-function showToast(type, message, duration = 4000) {
-    const container = document.getElementById('toastContainer');
-    
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    const iconMap = {
-        success: '✓',
-        error: '✕'
-    };
-    
-    toast.innerHTML = `
-        <span style="font-size: 18px;">${iconMap[type]}</span>
-        <span>${message}</span>
-        <button onclick="removeToast(this)" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #999; padding: 0; width: 20px; height: 20px;">&times;</button>
-    `;
-    
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        removeToast(toast.querySelector('button'));
-    }, duration);
-}
-
 function removeToast(closeBtn) {
     const toast = closeBtn.parentElement;
     toast.style.animation = 'slideOut 0.3s ease forwards';
@@ -77,26 +50,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Validate dates
-document.getElementById('startDate').addEventListener('change', function() {
-    const startDate = this.value;
-    const endDateInput = document.getElementById('endDate');
-    
-    if (startDate && endDateInput.value && startDate > endDateInput.value) {
-        showToast('error', 'Start date cannot be after end date');
-        this.value = '';
-    }
-});
-
-document.getElementById('endDate').addEventListener('change', function() {
-    const endDate = this.value;
-    const startDateInput = document.getElementById('startDate');
-    
-    if (endDate && startDateInput.value && endDate < startDateInput.value) {
-        showToast('error', 'End date cannot be before start date');
-        this.value = '';
-    }
-});
 function updateTask(){
     let task = {
         taskId: document.getElementById('taskId').value,

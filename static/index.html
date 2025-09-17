@@ -5,12 +5,9 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Project Tracker</title>
-        <script src="constants.js" ></script>
-        <script src="task.js" ></script>
         <link rel="stylesheet" href="task.css">
-        <script src="popup.js" ></script>
         <link rel="stylesheet" href="popup.css">
-        <script src="index.js" ></script>
+        <script src="index.js" type="module" ></script>
         <link rel="stylesheet" href="index.css">
     </head>
     <body>
@@ -21,13 +18,13 @@
             </header>
 
             <div class="controls">
-                <button class="btn" onclick="createTask(false)">
+                <button class="btn" id="newTaskButton">
                     ➕ New Task
                 </button>
                 <!-- <button class="btn" onclick="openNewProjectModal()">
                     ➕ New Project
                 </button> -->
-                <button class="btn" onclick="loadProjects()">
+                <button class="btn" id="refreshButton">
                     🔄 Refresh
                 </button>
                 
@@ -96,16 +93,16 @@
 <!-- success popup -->
         <div id="popupOverlay" class="popup-overlay" onclick="closePopup(event)">
             <div class="popup" onclick="event.stopPropagation()">
-                <div id="popupHeader" class="popup-header">
-                    <button class="popup-close" onclick="closePopup()">&times;</button>
+                <div id="popupHeader" class="popup-header" >
+                    <button class="popup-close" id="popupCloseButton" >&times;</button>
                     <span id="popupIcon" class="popup-icon">✓</span>
                     <h3 id="popupTitle" class="popup-title">Success!</h3>
                 </div>
                 <div class="popup-body">
                     <p id="popupMessage" class="popup-message">Operation completed successfully!</p>
                     <div class="popup-buttons">
-                        <button id="popupPrimaryBtn" class="popup-btn primary" onclick="closePopup()">OK</button>
-                        <button id="popupSecondaryBtn" class="popup-btn secondary" onclick="closePopup()" style="display: none;">Cancel</button>
+                        <button id="popupPrimaryBtn" class="popup-btn primary" >OK</button>
+                        <button id="popupSecondaryBtn" class="popup-btn secondary"  style="display: none;">Cancel</button>
                     </div>
                 </div>
             </div>

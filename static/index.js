@@ -1,4 +1,6 @@
-console.log("we got this");
+import  {API_BASE} from './constants.js'
+import { showPopup } from './popup.js';
+import {addClick} from './utilities.js'
 
 let currentProject = null;
 let tasks = [];
@@ -6,7 +8,7 @@ let updates = [];
 let independentTasks = []
 
 
-async function loadProjects() {
+const loadProjects = async()=> {
     try {
         // const project_response = await fetch(`${API_BASE}/projects`);
         // const projects = await project_response.json();
@@ -160,7 +162,7 @@ function closeProjectModal() {
     document.getElementById('projectModal').style.display = 'none';
 }
 
-function createTask(isProjectTask=true) {
+function createTask() {
     let newTask = {}
     newTask.name = prompt('task name:');
     if (newTask.name) {
@@ -168,29 +170,18 @@ function createTask(isProjectTask=true) {
         newTask.endDate = prompt('End date (YYYY-MM-DD, optional):');
         newTask.status = prompt('Status (not_started/in_progress/completed):', 'not_started');
         newTask.description = prompt('Description', 'None');
-       if(isProjectTask){ 
-            tasks.push({
-                "name":newTask.name,
-                start_date: newTask.startDate || null,
-                end_date: newTask.endDate || null,
-                status: newTask.status || 'not_started',
-                description: newTask.description
-                });
-                rendertasksList();
-        }else{
-            fetch(`${API_BASE}/task`,{
-                method: "POST"
-                ,headers:{"Content-Type":"application/json"}
-                , body:JSON.stringify(newTask)
-            }).then((r)=>{
-                showPopup('success', 'Your project has been created. now go get it done', 'good for you');
-                closeProjectModal()
-                loadProjects()
-            }).catch((e)=>{
-                showPopup('error', 'Something failed:', `${e}`);
-            })
-            renderIndependentTasksList()
-        }
+        fetch(`${API_BASE}/task`,{
+            method: "POST"
+            ,headers:{"Content-Type":"application/json"}
+            , body:JSON.stringify(newTask)
+        }).then((r)=>{
+            showPopup('success', 'Your project has been created. now go get it done', 'good for you');
+            closeProjectModal()
+            loadProjects()
+        }).catch((e)=>{
+            showPopup('error', 'Something failed:', `${e}`);
+        })
+    renderIndependentTasksList()   
         
     }
 }
@@ -314,6 +305,13 @@ function getStatusColor(status) {
 }
 
 $(document).ready(function() {
-    console.log("ready steady");
     loadProjects();
 });
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    addClick("refreshButton", loadProjects)
+    addClick("newTaskButton", createTask )
+
+})
