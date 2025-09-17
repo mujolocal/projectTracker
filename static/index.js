@@ -1,5 +1,5 @@
 console.log("we got this");
-var API_BASE = 'http://localhost:8000';
+var API_BASE = 'http://127.0.0.1:8000';
 let currentProject = null;
 let tasks = [];
 let updates = [];
@@ -8,11 +8,11 @@ let independentTasks = []
 
 async function loadProjects() {
     try {
-        const project_response = await fetch(`${API_BASE}/projects`);
-        const projects = await project_response.json();
+        // const project_response = await fetch(`${API_BASE}/projects`);
+        // const projects = await project_response.json();
         const task_response = await fetch(`${API_BASE}/independenttask`);
         independentTasks = await task_response.json();
-        renderProjects(projects);
+        // renderProjects(projects);
         renderIndependentTasksList();
     } catch (error) {
         console.error('Error loading projects:', error);
@@ -119,7 +119,7 @@ const orchestrateNewProject=(event)=>{
     jsonData["tasks"] = tasks;
     jsonData["updates"] = updates;
     console.log(jsonData);
-    fetch("http://127.0.0.1:8000/orchestrateProjects",{
+    fetch(`${API_BASE}/orchestrateProjects`,{
         method: "POST"
         ,headers:{"Content-Type":"application/json"}
         , body:JSON.stringify(jsonData)
@@ -178,7 +178,7 @@ function createTask(isProjectTask=true) {
                 });
                 rendertasksList();
         }else{
-            fetch("http://127.0.0.1:8000/task",{
+            fetch(`${API_BASE}/task`,{
                 method: "POST"
                 ,headers:{"Content-Type":"application/json"}
                 , body:JSON.stringify(newTask)

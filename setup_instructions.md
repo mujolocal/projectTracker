@@ -9,6 +9,7 @@ Coming Soon:
 2. projects
 3. lists
 4. notifications
+5. reucurring tasks
 
 ### 1. Setup
 

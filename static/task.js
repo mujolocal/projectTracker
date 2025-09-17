@@ -102,7 +102,7 @@ function updateTask(){
         taskId: document.getElementById('taskId').value,
         status: document.getElementById('recordStatus').value
     };
-    fetch("http://127.0.0.1:8000/task",{
+    fetch(`${API_BASE}/task`,{
         method: "PUT"
         ,headers:{"Content-Type":"application/json"}
         , body:JSON.stringify(task)
