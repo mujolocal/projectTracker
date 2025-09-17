@@ -23,6 +23,7 @@ CSS
 ###  Setup
 
 ```bash
+python -m venv env
 pip install -r requirements_file.txt
 
 ```

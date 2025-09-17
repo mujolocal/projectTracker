@@ -1,5 +1,5 @@
 console.log("we got this");
-var API_BASE = 'http://127.0.0.1:8000';
+
 let currentProject = null;
 let tasks = [];
 let updates = [];
