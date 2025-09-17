@@ -78,16 +78,8 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Initialize database on startup
 init_db()
 
-#  id INTEGER PRIMARY KEY AUTOINCREMENT,
-            # project_id INTEGER,
-            # name TEXT NOT NULL,
-            # description TEXT,
-            # start_date TEXT,
-            # end_date TEXT,
-# Pydantic models
 class Task(BaseModel):
     project_id: Optional[int] = None
     name: str

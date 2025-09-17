@@ -22,17 +22,6 @@ async function loadProjects() {
             '<div class="empty-state"><h3>Error loading projects</h3><p>Make sure the server is running on port 8000</p></div>';
     }
 }
-// function getIndependentTasks(){
-//     fetch("http://127.0.0.1:8000/independentTasks",{
-//         method: "GET"
-//         ,headers:{"Content-Type":"application/json"}
-//         , body:JSON.stringify(jsonData)
-//     }).then((r)=>{
-        
-//     }).catch((e)=>{
-//         showPopup('error', 'Something failed:', `${e}`);
-//     })
-// }
 
 function removeTask(id){
     console.log(`the task to be removed is ${id}`)
@@ -176,26 +165,37 @@ function closeProjectModal() {
 }
 
 function createTask(isProjectTask=true) {
-    const name = prompt('task name:');
-    if (name) {
-        const startDate = prompt('Start date (YYYY-MM-DD, optional):');
-        const endDate = prompt('End date (YYYY-MM-DD, optional):');
-        const status = prompt('Status (not_started/in_progress/completed):', 'not_started');
-        const description = prompt('Description', 'None');
-        // const isReocurring = prompt("Is this task reocurring")
-        // if(isReocurring){
-        //     const schedule = prompt("Schedule", "type of frequency: m,d,w  type of repetition:1 every, 2 every other " )
-        // }
+    let newTask = {}
+    newTask.name = prompt('task name:');
+    if (newTask.name) {
+        newTask.startDate = prompt('Start date (YYYY-MM-DD, optional):');
+        newTask.endDate = prompt('End date (YYYY-MM-DD, optional):');
+        newTask.status = prompt('Status (not_started/in_progress/completed):', 'not_started');
+        newTask.description = prompt('Description', 'None');
        if(isProjectTask){ 
             tasks.push({
-                name,
-                start_date: startDate || null,
-                end_date: endDate || null,
-                status: status || 'not_started',
-                description: description
+                "name":newTask.name,
+                start_date: newTask.startDate || null,
+                end_date: newTask.endDate || null,
+                status: newTask.status || 'not_started',
+                description: newTask.description
                 });
+                rendertasksList();
+        }else{
+            fetch("http://127.0.0.1:8000/task",{
+                method: "POST"
+                ,headers:{"Content-Type":"application/json"}
+                , body:JSON.stringify(newTask)
+            }).then((r)=>{
+                showPopup('success', 'Your project has been created. now go get it done', 'good for you');
+                closeProjectModal()
+                loadProjects()
+            }).catch((e)=>{
+                showPopup('error', 'Something failed:', `${e}`);
+            })
+            renderIndependentTasksList()
         }
-        rendertasksList();
+        
     }
 }
 
@@ -237,7 +237,7 @@ function rendertasksList() {
 function renderIndependentTasksList() {
     const container = document.getElementById("independent-tasks-container");
     container.innerHTML = independentTasks.map((task, index) => `
-        <div  onclick="updateTask('${task.id}')" style="
+        <div  onclick="openUpdateForm('${task.id}')" style="
             background: #fff;
             border: 1px solid #e1e5e9;
             border-radius: 8px;
