@@ -5,8 +5,6 @@ let tasks = [];
 let updates = [];
 let independentTasks = []
 
-// Load projects on page load
-// document.addEventListener('DOMContentLoaded', loadProjects);
 
 async function loadProjects() {
     try {
@@ -96,9 +94,7 @@ function renderProjects(projects) {
         </div>
     `;
 }
-function updateTask(id){
-    console.log(`this is the id ${id}`)
-}
+
 
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString();

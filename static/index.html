@@ -111,43 +111,32 @@
         </div>
         <div id="toastContainer" class="toast-container"></div>
 <!-- task update -->
+
+
         <div id="updatePopupOverlay" class="popup-overlay" onclick="closeUpdateForm(event)">
             <div class="update-popup" onclick="event.stopPropagation()">
                 <div class="popup-header">
                     <button class="popup-close" onclick="closeUpdateForm()">&times;</button>
-                    <h3 class="popup-title">Update Record</h3>
-                    <p class="popup-subtitle">Edit the record details below</p>
+                    <h3 class="popup-title">Update Task</h3>
                 </div>
                 
                 <div class="form-container">
                     <form id="updateForm">
-                        <!-- Hidden ID field -->
-                        <input type="hidden" id="recordId" name="id">
-                        
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label required" for="projectId">Project ID</label>
-                                <input type="number" id="projectId" name="project_id" class="form-input" disabled>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="occurancesId">Occurrences ID</label>
-                                <input type="number" id="occurancesId" name="occurances_id" class="form-input">
-                            </div>
+                        <input type="hidden" id="taskId" name="id">
                             
                             <div class="form-group full-width">
                                 <label class="form-label required" for="recordName">Name</label>
-                                <input type="text" id="recordName" name="name" class="form-input" required maxlength="255">
+                                <input type="text" id="recordName" name="name" class="form-input" required maxlength="255" readonly>
                             </div>
                             
                             <div class="form-group full-width">
                                 <label class="form-label" for="recordDescription">Description</label>
-                                <textarea id="recordDescription" name="description" class="form-textarea" placeholder="Enter task description..."></textarea>
+                                <textarea id="recordDescription" name="description" class="form-textarea" placeholder="Enter task description..." readonly></textarea>
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label" for="startDate">Start Date</label>
-                                <input type="date" id="startDate" name="start_date" class="form-input">
+                                <input type="date" id="startDate" name="start_date" class="form-input" readonly>
                             </div>
                             
                             <div class="form-group">
@@ -155,6 +144,10 @@
                                 <input type="date" id="endDate" name="end_date" class="form-input">
                             </div>
                             
+                            <div class="form-group full-width" id="updateFormNotes">
+                                
+                            </div>
+
                             <div class="form-group full-width">
                                 <label class="form-label" for="recordStatus">Status</label>
                                 <select id="recordStatus" name="status" class="form-select">
@@ -167,16 +160,13 @@
                         </div>
                         
                         <div class="form-actions">
-                            <button type="button" class="btn btn-danger" onclick="deleteRecord()">
+                            <button type="button" class="btn btn-danger" onclick="closeUpdateForm()">
                                 <span class="loading-spinner" id="deleteSpinner"></span>
-                                Delete
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="closeUpdateForm()">
                                 Cancel
                             </button>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="button" onclick="updateTask()" class="btn btn-primary">
                                 <span class="loading-spinner" id="updateSpinner"></span>
-                                Update Record
+                                Update Task
                             </button>
                         </div>
                     </form>

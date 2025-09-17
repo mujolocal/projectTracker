@@ -88,9 +88,9 @@ class Task(BaseModel):
     description: str
     status: str = "not_started"
 
-class Update(BaseModel):
-    note: str
-    date: str
+class TaskUpdate(BaseModel):
+    taskId: int
+    status: str
 
 class Project(BaseModel):
     name: str
@@ -98,7 +98,7 @@ class Project(BaseModel):
     status: str = "not_started"
     description: str 
     tasks: List[Task] = []
-    updates: List[Update] = []
+
 
 class ProjectResponse(BaseModel):
     id: int
@@ -106,7 +106,6 @@ class ProjectResponse(BaseModel):
     date_started: str
     completion_status: str
     tasks: List[Task] = []
-    updates: List[Update] = []
     created_at: str
     updated_at: str
 
@@ -126,12 +125,54 @@ async def root():
 async def getIndependentTasks():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM task WHERE project_id IS NULL;")
+    cursor.execute("""
+        SELECT * FROM task WHERE project_id IS NULL AND status NOT IN ('cancelled', 'completed')
+        ORDER BY 
+            CASE 
+                WHEN status = 'in_progress' THEN 1
+                WHEN status = 'not_started' THEN 2
+                WHEN status = 'on_hold' THEN 3
+                ELSE 4
+            END;""")
     tasks = [dict(task) for task in cursor.fetchall()]
-    print(tasks)
-
     return tasks
 
+@app.get("/task/{id}")
+async def get_task(id:int):
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""SELECT * FROM task WHERE ID=:id""",{"id":id})
+        task = cursor.fetchone()
+        columns = [col[0] for col in cursor.description]
+        task_dict = dict(zip(columns, task))
+        return JSONResponse(content=task_dict, status_code=200)
+    except Exception as e:
+        if conn != None:
+            conn.rollback()
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+    finally:
+        if conn != None:
+            conn.close()
+
+@app.put("/task", status_code=201)
+async def update_task(taskUpdate: TaskUpdate):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            UPDATE task SET status = ? WHERE id = ?;
+        """, [taskUpdate.status, taskUpdate.taskId])
+        conn.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+        
+
+    
 @app.post("/task", status_code=201)
 async def add_task(task:Task):
     if(task.project_id == None):
@@ -155,7 +196,9 @@ def addIndependentTask(task:Task):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
     finally:
+        cursor.close()
         conn.close()
+        
         
 
 
@@ -177,35 +220,30 @@ def addProjectTask(task:Task):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
     finally:
+        cursor.close()
         conn.close()
+        
 
 
 @app.get("/projects")
 async def get_projects():
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Get all projects
+
     cursor.execute("SELECT * FROM project ORDER BY date_started DESC")
     projects = cursor.fetchall()
     
     result = []
     for project in projects:
         project_dict = dict(project)
-        
-        # Get tasks for this project
         cursor.execute("SELECT * FROM task WHERE project_id = ?", (project['id'],))
         tasks = [dict(task) for task in cursor.fetchall()]
-        
-        # Get updates for this project
-        # cursor.execute("SELECT * FROM updates WHERE project_id = ? ORDER BY date DESC", (project['id'],))
-        # updates = [dict(update) for update in cursor.fetchall()]
         updates = []
         
         project_dict['tasks'] = tasks
         project_dict['updates'] = updates
         result.append(project_dict)
-    print(result)
+    cursor.close()
     conn.close()
     return result
 
@@ -236,13 +274,12 @@ async def get_project(project_id: int):
     project_dict['updates'] = updates
     
     conn.close()
+    cursor.close()
     return project_dict
 
 
 @app.post("/orchestrateProjects")
 async def orchestrate_project(project:Project):
-    print(project)
-    updates = project.updates
     tasks = project.tasks
     conn = None
     try:
@@ -267,25 +304,7 @@ async def orchestrate_project(project:Project):
         if conn != None:
             conn.close()
 
-@app.get("/task/{id}")
-async def get_task(id:int):
-    print("this is the id ",id)
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""SELECT * FROM task WHERE ID=:id""",{"id":id})
-        task = cursor.fetchone()
-        columns = [col[0] for col in cursor.description]
-        task_dict = dict(zip(columns, task))
-        return JSONResponse(content=task_dict, status_code=200)
-    except Exception as e:
-        if conn != None:
-            conn.rollback()
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-    finally:
-        if conn != None:
-            conn.close()
+
     
             
 
