@@ -5,8 +5,7 @@ import { formatDate } from './utilities.js';
 let currentRecordId = null;
 let independentTasks = []
 
-function openUpdateForm(id) {
-    recordData = null;
+export const  openUpdateForm=(id)=> {
     fetch(`${API_BASE}/task/${id}`)
     .then((response)=> response.json())
     .then((recordData)=>{ 
@@ -74,71 +73,111 @@ export const getIndependentTasks = async()=>{
 
 export const  renderIndependentTasksList=()=> {
     const container = document.getElementById("independent-tasks-container");
-    container.innerHTML = independentTasks.map((task, index) => `
-        <div  onclick="openUpdateForm('${task.id}')" style="
-            background: #fff;
-            border: 1px solid #e1e5e9;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        
-        " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.15)'; this.style.borderColor='#007bff';" 
-           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'; this.style.borderColor='#e1e5e9';">
-            
-            <div style="display: flex;  justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                <h4 style="margin: 0; color: #2c3e50; font-size: 1.1rem; font-weight: 600;">
-                    ${task.name}
-                </h4>
-                <span class="status-badge" style="
-                    background: ${getStatusColor(task.status)};
-                    color: white;
-                    padding: 4px 8px;
-                    border-radius: 12px;
-                    font-size: 0.75rem;
-                    font-weight: 500;
-                    text-transform: capitalize;
-                ">
-                    ${task.status.replace('_', ' ')}
-                </span>
-            </div>
-            
-            <div style="display: flex; justify-content:space-between; align-items: center; gap: 16px; margin-bottom: 12px; color: #6c757d; font-size: 0.85rem;">
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <p>Start Date: </p>
-                    <span>${task.start_date ? formatDate(task.start_date) : 'No start'}</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <p>End Date: </p>
-                    <span>${task.end_date ? formatDate(task.end_date) : 'No end'}</span>
-                </div>
-            </div>
-            
-            <p style="
-                margin: 0;
-                color: #495057;
-                line-height: 1.4;
-                font-size: 0.9rem;
-            ">
-                ${task.description || 'No description provided'}
-            </p>
-        </div>
-        
-    `).join('') || `
-        <div style="
-            text-align: center;
-            color: #6c757d;
-            padding: 3rem 1rem;
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 8px;
-            margin: 1rem 0;
-        ">
-            <div style="font-size: 2rem; margin-bottom: 1rem;">📝</div>
-            <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">No tasks added yet</div>
-            <div style="font-size: 0.9rem;">Add your first task to get started</div>
-        </div>
-    `;
+    const tasks = independentTasks.map((task, index) => createTaskCard(task));
+    container.replaceChildren(...tasks);
+}
+
+const  createTaskCard=(task)=> {
+  const div = document.createElement("div");
+
+  // parent styles
+  Object.assign(div.style, {
+    background: "#fff",
+    border: "1px solid #e1e5e9",
+    borderRadius: "8px",
+    padding: "16px",
+    marginBottom: "12px",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+  });
+
+  // hover effects
+  div.addEventListener("mouseover", () => {
+    div.style.transform = "translateY(-1px)";
+    div.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    div.style.borderColor = "#007bff";
+  });
+  div.addEventListener("mouseout", () => {
+    div.style.transform = "translateY(0)";
+    div.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
+    div.style.borderColor = "#e1e5e9";
+  });
+  div.addEventListener('click', ()=>{
+    openUpdateForm(task.id)
+  })
+
+  // -------- HEADER ROW --------
+  const header = document.createElement("div");
+  Object.assign(header.style, {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: "8px",
+  });
+
+  const title = document.createElement("h4");
+  title.textContent = task.name;
+  Object.assign(title.style, {
+    margin: "0",
+    color: "#2c3e50",
+    fontSize: "1.1rem",
+    fontWeight: "600",
+  });
+
+  const status = document.createElement("span");
+  status.textContent = task.status.replace("_", " ");
+  status.className = "status-badge";
+  Object.assign(status.style, {
+    background: getStatusColor(task.status),
+    color: "white",
+    padding: "4px 8px",
+    borderRadius: "12px",
+    fontSize: "0.75rem",
+    fontWeight: "500",
+    textTransform: "capitalize",
+  });
+
+  header.appendChild(title);
+  header.appendChild(status);
+
+  // -------- DATES ROW --------
+  const dates = document.createElement("div");
+  Object.assign(dates.style, {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "16px",
+    marginBottom: "12px",
+    color: "#6c757d",
+    fontSize: "0.85rem",
+  });
+
+  const start = document.createElement("div");
+  Object.assign(start.style, { display: "flex", alignItems: "center", gap: "4px" });
+  start.innerHTML = `<p>Start Date: </p><span>${task.start_date ? formatDate(task.start_date) : "No start"}</span>`;
+
+  const end = document.createElement("div");
+  Object.assign(end.style, { display: "flex", alignItems: "center", gap: "4px" });
+  end.innerHTML = `<p>End Date: </p><span>${task.end_date ? formatDate(task.end_date) : "No end"}</span>`;
+
+  dates.appendChild(start);
+  dates.appendChild(end);
+
+  // -------- DESCRIPTION --------
+  const desc = document.createElement("p");
+  desc.textContent = task.description || "No description provided";
+  Object.assign(desc.style, {
+    margin: "0",
+    color: "#495057",
+    lineHeight: "1.4",
+    fontSize: "0.9rem",
+  });
+
+  // append everything to main card
+  div.appendChild(header);
+  div.appendChild(dates);
+  div.appendChild(desc);
+
+  return div;
 }
