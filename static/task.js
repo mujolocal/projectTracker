@@ -1,6 +1,6 @@
 import {getStatusColor} from './utilities.js';
 import { API_BASE } from './constants.js';
-import { formatDate } from './utilities.js';
+import { formatDate, addClick } from './utilities.js';
 
 let currentRecordId = null;
 let independentTasks = []
@@ -64,6 +64,8 @@ function updateTask(){
         showPopup('error', 'Something failed:', `${e}`);
     })
 }
+
+
 
 export const getIndependentTasks = async()=>{
     const task_response = await fetch(`${API_BASE}/independenttask`);
@@ -181,3 +183,6 @@ const  createTaskCard=(task)=> {
 
   return div;
 }
+
+const updateTaskButton = document.getElementById('updateTaskButton')
+updateTaskButton.addEventListener('click', updateTask);
