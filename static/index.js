@@ -3,21 +3,36 @@ var API_BASE = 'http://localhost:8000';
 let currentProject = null;
 let tasks = [];
 let updates = [];
+let independentTasks = []
 
 // Load projects on page load
 // document.addEventListener('DOMContentLoaded', loadProjects);
 
 async function loadProjects() {
     try {
-        const response = await fetch(`${API_BASE}/projects`);
-        const projects = await response.json();
+        const project_response = await fetch(`${API_BASE}/projects`);
+        const projects = await project_response.json();
+        const task_response = await fetch(`${API_BASE}/independenttask`);
+        independentTasks = await task_response.json();
         renderProjects(projects);
+        renderIndependentTasksList();
     } catch (error) {
         console.error('Error loading projects:', error);
         document.getElementById('projects-container').innerHTML = 
             '<div class="empty-state"><h3>Error loading projects</h3><p>Make sure the server is running on port 8000</p></div>';
     }
 }
+// function getIndependentTasks(){
+//     fetch("http://127.0.0.1:8000/independentTasks",{
+//         method: "GET"
+//         ,headers:{"Content-Type":"application/json"}
+//         , body:JSON.stringify(jsonData)
+//     }).then((r)=>{
+        
+//     }).catch((e)=>{
+//         showPopup('error', 'Something failed:', `${e}`);
+//     })
+// }
 
 function removeTask(id){
     console.log(`the task to be removed is ${id}`)
@@ -160,21 +175,26 @@ function closeProjectModal() {
     document.getElementById('projectModal').style.display = 'none';
 }
 
-function addtask() {
+function createTask(isProjectTask=true) {
     const name = prompt('task name:');
     if (name) {
         const startDate = prompt('Start date (YYYY-MM-DD, optional):');
         const endDate = prompt('End date (YYYY-MM-DD, optional):');
         const status = prompt('Status (not_started/in_progress/completed):', 'not_started');
         const description = prompt('Description', 'None');
-        
-        tasks.push({
-            name,
-            start_date: startDate || null,
-            end_date: endDate || null,
-            status: status || 'not_started',
-            description: description
-        });
+        // const isReocurring = prompt("Is this task reocurring")
+        // if(isReocurring){
+        //     const schedule = prompt("Schedule", "type of frequency: m,d,w  type of repetition:1 every, 2 every other " )
+        // }
+       if(isProjectTask){ 
+            tasks.push({
+                name,
+                start_date: startDate || null,
+                end_date: endDate || null,
+                status: status || 'not_started',
+                description: description
+                });
+        }
         rendertasksList();
     }
 }
@@ -212,6 +232,91 @@ function rendertasksList() {
         </div>
     `).join('') || '<div style="text-align: center; color: #6c757d; padding: 1rem;">No tasks added yet</div>';
 }
+
+
+function renderIndependentTasksList() {
+    const container = document.getElementById("independent-tasks-container");
+    container.innerHTML = independentTasks.map((task, index) => `
+        <div  onclick="updateTask('${task.id}')" style="
+            background: #fff;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        
+        " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.15)'; this.style.borderColor='#007bff';" 
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'; this.style.borderColor='#e1e5e9';">
+            
+            <div style="display: flex;  justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                <h4 style="margin: 0; color: #2c3e50; font-size: 1.1rem; font-weight: 600;">
+                    ${task.name}
+                </h4>
+                <span class="status-badge" style="
+                    background: ${getStatusColor(task.status)};
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    text-transform: capitalize;
+                ">
+                    ${task.status.replace('_', ' ')}
+                </span>
+            </div>
+            
+            <div style="display: flex; justify-content:space-between; align-items: center; gap: 16px; margin-bottom: 12px; color: #6c757d; font-size: 0.85rem;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <p>Start Date: </p>
+                    <span>${task.start_date ? formatDate(task.start_date) : 'No start'}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <p>End Date: </p>
+                    <span>${task.end_date ? formatDate(task.end_date) : 'No end'}</span>
+                </div>
+            </div>
+            
+            <p style="
+                margin: 0;
+                color: #495057;
+                line-height: 1.4;
+                font-size: 0.9rem;
+            ">
+                ${task.description || 'No description provided'}
+            </p>
+        </div>
+        
+    `).join('') || `
+        <div style="
+            text-align: center;
+            color: #6c757d;
+            padding: 3rem 1rem;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            margin: 1rem 0;
+        ">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📝</div>
+            <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">No tasks added yet</div>
+            <div style="font-size: 0.9rem;">Add your first task to get started</div>
+        </div>
+    `;
+}
+
+// Helper function for status colors
+function getStatusColor(status) {
+    const statusColors = {
+        'not_started': '#6c757d',
+        'in_progress': '#007bff', 
+        'completed': '#28a745',
+        'on_hold': '#ffc107',
+        'cancelled': '#dc3545'
+    };
+    return statusColors[status] || '#6c757d';
+}
+
 $(document).ready(function() {
     console.log("ready steady");
     loadProjects();

@@ -49,20 +49,19 @@ def init_db():
             description TEXT,
             start_date TEXT,
             end_date TEXT,
-            status TEXT DEFAULT 'not_started',
-            occurances_id INTEGER
+            status TEXT DEFAULT 'not_started'
         )
     """)
     
     # Updates table
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS project_update (
+        CREATE TABLE IF NOT EXISTS note (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id INTEGER,
+            task_id INTEGER,
             note TEXT NOT NULL,
             date TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
+            FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE CASCADE
         )
     """)
     cursor.execute("""
@@ -71,6 +70,8 @@ def init_db():
             day_of_week INTEGER,
             day_of_month INTEGER,
             hour_of_day INTEGER
+            int task_id ,
+            FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE CASCADE
         )
     """)
     
@@ -80,10 +81,18 @@ def init_db():
 # Initialize database on startup
 init_db()
 
+#  id INTEGER PRIMARY KEY AUTOINCREMENT,
+            # project_id INTEGER,
+            # name TEXT NOT NULL,
+            # description TEXT,
+            # start_date TEXT,
+            # end_date TEXT,
 # Pydantic models
 class Task(BaseModel):
+    project_id: Optional[int] = None
     name: str
     start_date: Optional[str] = None
+    end_date: Optional[str] = None
     description: str
     status: str = "not_started"
 
@@ -120,6 +129,64 @@ def get_db_connection():
 @app.get("/")
 async def root():
     return {"message": "Project Tracker API"}
+
+@app.get("/independenttask")
+async def getIndependentTasks():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM task WHERE project_id IS NULL;")
+    tasks = [dict(task) for task in cursor.fetchall()]
+    print(tasks)
+
+    return tasks
+
+@app.post("/task", status_code=201)
+async def add_task(task:Task):
+    if(task.project_id == None):
+        addIndependentTask(task)
+    else:
+        addProjectTask(task)
+    
+    return task 
+
+
+def addIndependentTask(task:Task):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO task ( name, start_date, end_date, status, description)
+            VALUES (?, ?, ?, ?, ?)
+        """, (task.name, task.start_date, task.end_date, task.status, task.description))
+        conn.commit()
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+    finally:
+        conn.close()
+        
+
+
+def addProjectTask(task:Task):
+    project_id = task.project_id
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id FROM projects WHERE id = ?", (project_id,))
+        if not cursor.fetchone():
+            conn.close()
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        cursor.execute("""
+            INSERT INTO task (project_id, name, start_date, end_date, status)
+            VALUES (?, ?, ?, ?, ?)
+        """, (project_id, task.name, task.start_date, task.end_date, task.status))
+        conn.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+    finally:
+        conn.close()
+
 
 @app.get("/projects")
 async def get_projects():
@@ -305,27 +372,7 @@ async def get_task(id:int):
 #     return {"message": "Project deleted successfully"}
 
 # task routes
-# @app.post("/projects/{project_id}/tasks")
-# async def add_task(project_id: int, task: task):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-    
-#     # Check if project exists
-#     cursor.execute("SELECT id FROM projects WHERE id = ?", (project_id,))
-#     if not cursor.fetchone():
-#         conn.close()
-#         raise HTTPException(status_code=404, detail="Project not found")
-    
-#     cursor.execute("""
-#         INSERT INTO tasks (project_id, name, start_date, end_date, status)
-#         VALUES (?, ?, ?, ?, ?)
-#     """, (project_id, task.name, task.start_date, task.end_date, task.status))
-    
-#     task_id = cursor.lastrowid
-#     conn.commit()
-#     conn.close()
-    
-#     return {"id": task_id, "message": "task added successfully"}
+
 
 # @app.put("/projects/{project_id}/tasks/{task_id}")
 # async def update_task(project_id: int, task_id: int, task: task):
