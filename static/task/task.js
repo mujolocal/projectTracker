@@ -1,6 +1,7 @@
 import {getStatusColor} from '../utilities/utilities.js';
 import { API_BASE } from '../utilities/constants.js';
 import { formatDate, addClick } from '../utilities/utilities.js';
+import { showPopup } from '../utilities/popup.js';
 import { Note } from '../note/note.js';
 
 
@@ -8,7 +9,7 @@ let currentRecordId = null;
 let independentTasks = []
 
 
-export const  openUpdateForm=(id)=> {
+export const  openTaskUpdateForm=(id)=> {
   const note = Note();
     fetch(`${API_BASE}/task/${id}`)
     .then((response)=> response.json())
@@ -38,21 +39,22 @@ function closeUpdateForm(event) {
     currentRecordId = null;
 }
 
-function removeToast(closeBtn) {
-    const toast = closeBtn.parentElement;
-    toast.style.animation = 'slideOut 0.3s ease forwards';
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.parentElement.removeChild(toast);
-        }
-    }, 300);
-}
+// function removeToast(closeBtn) {
+//     const toast = closeBtn.parentElement;
+//     toast.style.animation = 'slideOut 0.3s ease forwards';
+//     setTimeout(() => {
+//         if (toast.parentElement) {
+//             toast.parentElement.removeChild(toast);
+//         }
+//     }, 300);
+// }
 
 
 function updateTask(){
     let task = {
         taskId: document.getElementById('taskId').value,
-        status: document.getElementById('recordStatus').value
+        status: document.getElementById('recordStatus').value,
+        newNote: document.getElementById('newNoteId').value
     };
     fetch(`${API_BASE}/task`,{
         method: "PUT"
@@ -62,11 +64,11 @@ function updateTask(){
         if(!r.ok){
             throw new Error("failed to update")
         }
-        showTaskUpdateForm('success', 'yay you updated the status of this thing', 'good for you');
+        showPopup('success', 'yay you updated the status of this thing', 'good for you');
         closeUpdateForm();
 
     }).catch((e)=>{
-        showTaskUpdateForm('error', 'Something failed:', `${e}`);
+        showPopup('error', 'Something failed:', `${e}`);
     })
 }
 
@@ -111,7 +113,7 @@ const  createTaskCard=(task)=> {
     div.style.borderColor = "#e1e5e9";
   });
   div.addEventListener('click', ()=>{
-    openUpdateForm(task.id)
+    openTaskUpdateForm(task.id)
   })
 
   // -------- HEADER ROW --------

@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 import os
 
-app = FastAPI(title="Project Tracker API")
+app = FastAPI(title="Task Tracker API")
 
 # Enable CORS for local development
 app.add_middleware(
@@ -58,8 +58,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS note (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             task_id INTEGER,
-            note TEXT NOT NULL,
-            date TEXT NOT NULL,
+            body TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE CASCADE
         )
@@ -91,6 +90,7 @@ class Task(BaseModel):
 class TaskUpdate(BaseModel):
     taskId: int
     status: str
+    newNote: str
 
 class Project(BaseModel):
     name: str
@@ -143,10 +143,20 @@ async def get_task(id:int):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""SELECT * FROM task WHERE ID=:id""",{"id":id})
+        cursor.execute("""SELECT task.id as id, task.name, task.description, task.start_date
+                       FROM task 
+                       WHERE  task.id=:id""",{"id":id})
         task = cursor.fetchone()
         columns = [col[0] for col in cursor.description]
         task_dict = dict(zip(columns, task))
+
+        cursor.execute("""SELECT id, body, created_at, task_id
+                       FROM note
+                       WHERE task_id=:id""",{"id":id})
+        notes = [dict(row) for row in cursor.fetchall()]
+        print(notes)
+        task_dict['notes'] = notes
+        print(task_dict)
         return JSONResponse(content=task_dict, status_code=200)
     except Exception as e:
         if conn != None:
@@ -164,8 +174,13 @@ async def update_task(taskUpdate: TaskUpdate):
         cursor.execute("""
             UPDATE task SET status = ? WHERE id = ?;
         """, [taskUpdate.status, taskUpdate.taskId])
+        if(taskUpdate.newNote):
+            cursor.execute("""INSERT INTO note(task_id, body) 
+                       VALUES(?,?)""",[taskUpdate.taskId, taskUpdate.newNote])
         conn.commit()
+
     except Exception as e:
+        conn.rollback()
         raise HTTPException(status_code=500, detail=f"Error: {e}")
     finally:
         cursor.close()

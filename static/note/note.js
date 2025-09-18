@@ -11,6 +11,7 @@ export function Note() {
   });
 
   const textarea = document.createElement("textarea");
+  textarea.id ="newNoteId"
   textarea.rows = 6;
   textarea.placeholder = "Write your note here...";
   Object.assign(textarea.style, {
