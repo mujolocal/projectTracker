@@ -1,7 +1,7 @@
-import {getStatusColor} from './utilities.js';
-import { API_BASE } from './constants.js';
-import { formatDate, addClick } from './utilities.js';
-import { Note } from './notes.js';
+import {getStatusColor} from '../utilities/utilities.js';
+import { API_BASE } from '../utilities/constants.js';
+import { formatDate, addClick } from '../utilities/utilities.js';
+import { Note } from '../note/note.js';
 
 
 let currentRecordId = null;
@@ -19,7 +19,7 @@ export const  openUpdateForm=(id)=> {
         document.getElementById('startDate').value = recordData.start_date || '';
         document.getElementById('endDate').value = recordData.end_date || '';
         document.getElementById('recordStatus').value = recordData.status || 'not_started';
-        document.getElementById("notesSection").appendChild(note);
+        document.getElementById("notesSection").replaceChildren(note);
         document.getElementById('taskUpdateOverlay').classList.add('show');
         document.body.style.overflow = 'hidden';
     })

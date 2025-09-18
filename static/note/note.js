@@ -6,7 +6,7 @@ export function Note() {
     padding: "12px",
     borderRadius: "8px",
     border: "1px solid #e0d890",
-    maxWidth: "300px",
+    width:'100%',
     fontFamily: "Arial, sans-serif",
   });
 
