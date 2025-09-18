@@ -152,7 +152,8 @@ async def get_task(id:int):
 
         cursor.execute("""SELECT id, body, created_at, task_id
                        FROM note
-                       WHERE task_id=:id""",{"id":id})
+                       WHERE task_id=:id
+                       ORDER BY id DESC""",{"id":id})
         notes = [dict(row) for row in cursor.fetchall()]
         print(notes)
         task_dict['notes'] = notes

@@ -1,4 +1,4 @@
-export function Note() {
+export function Note( id=0, body="", created_at="") {
   const container = document.createElement("div");
   container.className = "note";
   Object.assign(container.style, {
@@ -8,12 +8,24 @@ export function Note() {
     border: "1px solid #e0d890",
     width:'100%',
     fontFamily: "Arial, sans-serif",
+    marginBottom:"20px",
   });
 
   const textarea = document.createElement("textarea");
-  textarea.id ="newNoteId"
-  textarea.rows = 6;
-  textarea.placeholder = "Write your note here...";
+  
+  textarea.rows = 3;
+  if(body){
+    textarea.textContent = `${created_at}\n ${body}`;
+    textarea.id = `note_${id}`;
+    textarea.disabled = true;
+    container.style.marginBottom = "5px"
+    container.style.background = "#e0d890"
+  }else{
+      textarea.placeholder = "Notes updates Jokes whatever you need...";
+      textarea.id ="newNoteId"
+      
+  }
+
   Object.assign(textarea.style, {
     width: "100%",
     padding: "8px",

@@ -10,22 +10,24 @@ let independentTasks = []
 
 
 export const  openTaskUpdateForm=(id)=> {
-  const note = Note();
+  
     fetch(`${API_BASE}/task/${id}`)
     .then((response)=> response.json())
     .then((recordData)=>{ 
-        document.getElementById('taskId').value = recordData.id || 1;
-        document.getElementById('recordName').value = recordData.name || '';
-        document.getElementById('recordDescription').value = recordData.description || '';
-        document.getElementById('startDate').value = recordData.start_date || '';
-        document.getElementById('endDate').value = recordData.end_date || '';
-        document.getElementById('recordStatus').value = recordData.status || 'not_started';
-        document.getElementById("notesSection").replaceChildren(note);
-        document.getElementById('taskUpdateOverlay').classList.add('show');
-        document.body.style.overflow = 'hidden';
+      const newNote = Note();
+      const oldNotes = recordData.notes.map(_note => Note(_note.id, _note.body, _note.created_at))
+      document.getElementById('taskId').value = recordData.id || 1;
+      document.getElementById('recordName').value = recordData.name || '';
+      document.getElementById('recordDescription').value = recordData.description || '';
+      document.getElementById('startDate').value = recordData.start_date || '';
+      document.getElementById('endDate').value = recordData.end_date || '';
+      document.getElementById('recordStatus').value = recordData.status || 'not_started';
+      document.getElementById("newNote").replaceChildren(newNote);
+      document.getElementById("notesSection").replaceChildren(...oldNotes);
+      document.getElementById('taskUpdateOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
     })
     .catch((e)=>{console.log(e)});
-    
     
 }
 
