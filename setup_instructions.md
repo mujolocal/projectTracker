@@ -5,12 +5,12 @@ This project is basically my own personalized application, made for my brain. If
 ## Features
 1. tasks: a task is the basic unit of completion. Tasks can be created and updated. 
 Coming Soon **in no specific order** :
-1. notes
+1. notes -- added 9/18/2025 --
 2. projects
 3. lists
 4. notifications
 5. reucurring tasks
-6. Authentication
+6. Authentication -- maybe never --
 
 ### Stack
 Python3
