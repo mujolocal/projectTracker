@@ -1,26 +1,33 @@
-import {getStatusColor} from './utilities.js';
-import { API_BASE } from './constants.js';
-import { formatDate, addClick } from './utilities.js';
-import { showPopup } from './popup.js';
+import {getStatusColor} from '../utilities/utilities.js';
+import { API_BASE } from '../utilities/constants.js';
+import { formatDate, addClick } from '../utilities/utilities.js';
+import { showPopup } from '../utilities/popup.js';
+import { Note } from '../note/note.js';
+
 
 let currentRecordId = null;
 let independentTasks = []
 
-export const  openUpdateForm=(id)=> {
+
+export const  openTaskUpdateForm=(id)=> {
+  
     fetch(`${API_BASE}/task/${id}`)
     .then((response)=> response.json())
     .then((recordData)=>{ 
-        document.getElementById('taskId').value = recordData.id || 1;
-        document.getElementById('recordName').value = recordData.name || '';
-        document.getElementById('recordDescription').value = recordData.description || '';
-        document.getElementById('startDate').value = recordData.start_date || '';
-        document.getElementById('endDate').value = recordData.end_date || '';
-        document.getElementById('recordStatus').value = recordData.status || 'not_started';
-        document.getElementById('updatePopupOverlay').classList.add('show');
-        document.body.style.overflow = 'hidden';
+      const newNote = Note();
+      const oldNotes = recordData.notes.map(_note => Note(_note.id, _note.body, _note.created_at))
+      document.getElementById('taskId').value = recordData.id || 1;
+      document.getElementById('recordName').value = recordData.name || '';
+      document.getElementById('recordDescription').value = recordData.description || '';
+      document.getElementById('startDate').value = recordData.start_date || '';
+      document.getElementById('endDate').value = recordData.end_date || '';
+      document.getElementById('recordStatus').value = recordData.status || 'not_started';
+      document.getElementById("newNote").replaceChildren(newNote);
+      document.getElementById("notesSection").replaceChildren(...oldNotes);
+      document.getElementById('taskUpdateOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
     })
     .catch((e)=>{console.log(e)});
-    
     
 }
 
@@ -29,26 +36,27 @@ function closeUpdateForm(event) {
         return;
     }
     
-    document.getElementById('updatePopupOverlay').classList.remove('show');
+    document.getElementById('taskUpdateOverlay').classList.remove('show');
     document.body.style.overflow = 'auto';
     currentRecordId = null;
 }
 
-function removeToast(closeBtn) {
-    const toast = closeBtn.parentElement;
-    toast.style.animation = 'slideOut 0.3s ease forwards';
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.parentElement.removeChild(toast);
-        }
-    }, 300);
-}
+// function removeToast(closeBtn) {
+//     const toast = closeBtn.parentElement;
+//     toast.style.animation = 'slideOut 0.3s ease forwards';
+//     setTimeout(() => {
+//         if (toast.parentElement) {
+//             toast.parentElement.removeChild(toast);
+//         }
+//     }, 300);
+// }
 
 
 function updateTask(){
     let task = {
         taskId: document.getElementById('taskId').value,
-        status: document.getElementById('recordStatus').value
+        status: document.getElementById('recordStatus').value,
+        newNote: document.getElementById('newNoteId').value
     };
     fetch(`${API_BASE}/task`,{
         method: "PUT"
@@ -107,7 +115,7 @@ const  createTaskCard=(task)=> {
     div.style.borderColor = "#e1e5e9";
   });
   div.addEventListener('click', ()=>{
-    openUpdateForm(task.id)
+    openTaskUpdateForm(task.id)
   })
 
   // -------- HEADER ROW --------
@@ -177,6 +185,7 @@ const  createTaskCard=(task)=> {
     fontSize: "0.9rem",
   });
 
+
   // append everything to main card
   div.appendChild(header);
   div.appendChild(dates);
@@ -187,6 +196,6 @@ const  createTaskCard=(task)=> {
 
 const updateTaskButton = document.getElementById('updateTaskButton')
 updateTaskButton.addEventListener('click', updateTask);
-addClick("updatePopupOverlay",closeUpdateForm );
+addClick("taskUpdateOverlay",closeUpdateForm );
 addClick("updateFormXbutton",closeUpdateForm );
 addClick("closeUpdateTaskButton",closeUpdateForm );

@@ -1,9 +1,9 @@
-import  {API_BASE} from './constants.js';
-import { showPopup } from './popup.js';
-import {addClick} from './utilities.js';
-import {renderIndependentTasksList, getIndependentTasks} from './task.js';
+import  {API_BASE} from './utilities/constants.js';
+import { showPopup } from './utilities/popup.js';
+import {addClick} from './utilities/utilities.js';
+import {renderIndependentTasksList, getIndependentTasks} from './task/task.js';
 
-// let currentProject = null;
+let currentProject = null;
 let tasks = [];
 // let updates = [];
 

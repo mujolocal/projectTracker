@@ -5,8 +5,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Project Tracker</title>
-        <link rel="stylesheet" href="task.css">
-        <link rel="stylesheet" href="popup.css">
+        <link rel="stylesheet" href="task/task.css">
+        <link rel="stylesheet" href="utilities/popup.css">
         <script src="index.js" type="module" ></script>
         <link rel="stylesheet" href="index.css">
     </head>
@@ -33,14 +33,11 @@
                 <div class="loading">Loading Tasks...</div>
                 
             </div>
-            <!-- <div id="projects-container">
-                <div class="loading">Loading projects...</div>
-                
-            </div> -->
+
             
         </div>
 
-        <!-- New/Edit Project Modal -->
+                                            <!-- New/Edit Project Modal -->
         <div id="projectModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -79,10 +76,10 @@
                         <div id="tasksList" class="item-list"></div>
                     </div>
 
-                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-                    <button type="button" class="btn" onclick="closeProjectModal()">Cancel</button>
-                    <button type="submit" class="btn btn-success">Save Project</button>
-                </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn" onclick="closeProjectModal()">Cancel</button>
+                        <button type="submit" class="btn btn-success">Save Project</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -90,7 +87,7 @@
 
 
 
-<!-- success popup -->
+                        <!-- success popup -->
         <div id="popupOverlay" class="popup-overlay" onclick="closePopup(event)">
             <div class="popup" onclick="event.stopPropagation()">
                 <div id="popupHeader" class="popup-header" >
@@ -108,14 +105,14 @@
             </div>
         </div>
         <div id="toastContainer" class="toast-container"></div>
-<!-- task update -->
+             <!-- task update -->
 
 
-        <div id="updatePopupOverlay" class="popup-overlay" >
-            <div class="update-popup" onclick="event.stopPropagation()">
-                <div class="popup-header">
-                    <button class="popup-close" id="updateFormXbutton">&times;</button>
-                    <h3 class="popup-title">Update Task</h3>
+        <div id="taskUpdateOverlay" class="task-overlay" >
+            <div class="update-task" onclick="event.stopPropagation()">
+                <div class="task-header">
+                    <button class="task-close" id="updateFormXbutton">&times;</button>
+                    <h3 class="task-title">Update Task</h3>
                 </div>
                 
                 <div class="form-container">
@@ -155,21 +152,23 @@
                                     <option value="on_hold">On Hold</option>
                                 </select>
                             </div>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" id="closeUpdateTaskButton" class="btn btn-danger" >
-                                <span class="loading-spinner" id="deleteSpinner"></span>
-                                Cancel
-                            </button>
-                            <button type="button" id="updateTaskButton" class="btn btn-primary">
-                                <span class="loading-spinner" id="updateSpinner"></span>
-                                Update Task
-                            </button>
-                        </div>
+                            <div id="newNote"></div>
+                            <div id="notesSection"></div>
                     </form>
                 </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="closeUpdateTaskButton" class="btn btn-danger" >
+                        <span class="loading-spinner" id="deleteSpinner"></span>
+                        Cancel
+                    </button>
+                    <button type="button" id="updateTaskButton" class="btn btn-primary">
+                        <span class="loading-spinner" id="updateSpinner"></span>
+                        Update Task
+                    </button>
+                </div>       
             </div>
+            
         </div>
 
     </body>
