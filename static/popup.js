@@ -1,5 +1,6 @@
 import {addClick} from './utilities.js'
 
+
 const popupConfig = {
             success: {
                 icon: '✓',
@@ -46,7 +47,8 @@ export const showPopup = (type, customTitle = null, customMessage = null, showSe
     const title = document.getElementById('popupTitle');
     const message = document.getElementById('popupMessage');
     const primaryBtn = document.getElementById('popupPrimaryBtn');
-    const closeBtn = document.getElementById('popupCloseButton');
+
+
     const secondaryBtn = document.getElementById('popupSecondaryBtn');
     addClick('popupPrimaryBtn',closePopup );
     addClick('popupCloseButton', closePopup);

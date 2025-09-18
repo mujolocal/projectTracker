@@ -3,7 +3,7 @@ import { showPopup } from './popup.js';
 import {addClick} from './utilities.js';
 import {renderIndependentTasksList, getIndependentTasks} from './task.js';
 
-// let currentProject = null;
+let currentProject = null;
 let tasks = [];
 // let updates = [];
 

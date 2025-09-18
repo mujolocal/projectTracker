@@ -1,12 +1,15 @@
 import {getStatusColor} from './utilities.js';
 import { API_BASE } from './constants.js';
 import { formatDate, addClick } from './utilities.js';
-import { showPopup } from './popup.js';
+import { Note } from './notes.js';
+
 
 let currentRecordId = null;
 let independentTasks = []
 
+
 export const  openUpdateForm=(id)=> {
+  const note = Note();
     fetch(`${API_BASE}/task/${id}`)
     .then((response)=> response.json())
     .then((recordData)=>{ 
@@ -16,7 +19,8 @@ export const  openUpdateForm=(id)=> {
         document.getElementById('startDate').value = recordData.start_date || '';
         document.getElementById('endDate').value = recordData.end_date || '';
         document.getElementById('recordStatus').value = recordData.status || 'not_started';
-        document.getElementById('updatePopupOverlay').classList.add('show');
+        document.getElementById("notesSection").appendChild(note);
+        document.getElementById('taskUpdateOverlay').classList.add('show');
         document.body.style.overflow = 'hidden';
     })
     .catch((e)=>{console.log(e)});
@@ -29,7 +33,7 @@ function closeUpdateForm(event) {
         return;
     }
     
-    document.getElementById('updatePopupOverlay').classList.remove('show');
+    document.getElementById('taskUpdateOverlay').classList.remove('show');
     document.body.style.overflow = 'auto';
     currentRecordId = null;
 }
@@ -58,11 +62,11 @@ function updateTask(){
         if(!r.ok){
             throw new Error("failed to update")
         }
-        showPopup('success', 'yay you updated the status of this thing', 'good for you');
+        showTaskUpdateForm('success', 'yay you updated the status of this thing', 'good for you');
         closeUpdateForm();
 
     }).catch((e)=>{
-        showPopup('error', 'Something failed:', `${e}`);
+        showTaskUpdateForm('error', 'Something failed:', `${e}`);
     })
 }
 
@@ -177,6 +181,7 @@ const  createTaskCard=(task)=> {
     fontSize: "0.9rem",
   });
 
+
   // append everything to main card
   div.appendChild(header);
   div.appendChild(dates);
@@ -187,6 +192,6 @@ const  createTaskCard=(task)=> {
 
 const updateTaskButton = document.getElementById('updateTaskButton')
 updateTaskButton.addEventListener('click', updateTask);
-addClick("updatePopupOverlay",closeUpdateForm );
+addClick("taskUpdateOverlay",closeUpdateForm );
 addClick("updateFormXbutton",closeUpdateForm );
 addClick("closeUpdateTaskButton",closeUpdateForm );
