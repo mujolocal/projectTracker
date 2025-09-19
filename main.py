@@ -68,8 +68,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             day_of_week INTEGER,
             day_of_month INTEGER,
-            hour_of_day INTEGER
-            int task_id ,
+            hour_of_day INTEGER,
+            task_id INTEGER,
             FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE CASCADE
         )
     """)
