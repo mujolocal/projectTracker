@@ -24,7 +24,9 @@ function removeTask(id){
     rendertasksList();
     
 }
-
+function closeProjectModal() {
+    document.getElementById('projectModal').style.display = 'none';
+}
 
 
 function createTask() {
