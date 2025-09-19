@@ -49,7 +49,8 @@ def init_db():
             description TEXT,
             start_date TEXT,
             end_date TEXT,
-            status TEXT DEFAULT 'not_started'
+            status TEXT DEFAULT 'not_started',
+            is_scheduled_task BOLLEAN DEFAULS 0 
         )
     """)
     
@@ -68,7 +69,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             day_of_week INTEGER,
             day_of_month INTEGER,
-            hour_of_day INTEGER
+            hour_of_day INTEGER,
             int task_id ,
             FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE CASCADE
         )
@@ -193,9 +194,6 @@ async def update_task(taskUpdate: TaskUpdate):
 async def add_task(task:Task):
     if(task.project_id == None):
         addIndependentTask(task)
-    else:
-        addProjectTask(task)
-    
     return task 
 
 
@@ -215,110 +213,16 @@ def addIndependentTask(task:Task):
         cursor.close()
         conn.close()
         
-        
+@app.get("/schedule")
+async def check_schedule():
+    # get schedules
+    # see which schedules are about to come up
+    # get incomplete scheduled tasks
+    # set Those tasks to failed
+    # generate new recurring tasks
+    pass
 
 
-def addProjectTask(task:Task):
-    project_id = task.project_id
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT id FROM projects WHERE id = ?", (project_id,))
-        if not cursor.fetchone():
-            conn.close()
-            raise HTTPException(status_code=404, detail="Project not found")
-        
-        cursor.execute("""
-            INSERT INTO task (project_id, name, start_date, end_date, status)
-            VALUES (?, ?, ?, ?, ?)
-        """, (project_id, task.name, task.start_date, task.end_date, task.status))
-        conn.commit()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
-    finally:
-        cursor.close()
-        conn.close()
-        
-
-
-@app.get("/projects")
-async def get_projects():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM project ORDER BY date_started DESC")
-    projects = cursor.fetchall()
-    
-    result = []
-    for project in projects:
-        project_dict = dict(project)
-        cursor.execute("SELECT * FROM task WHERE project_id = ?", (project['id'],))
-        tasks = [dict(task) for task in cursor.fetchall()]
-        updates = []
-        
-        project_dict['tasks'] = tasks
-        project_dict['updates'] = updates
-        result.append(project_dict)
-    cursor.close()
-    conn.close()
-    return result
-
-@app.get("/projects/{project_id}", response_model=ProjectResponse)
-async def get_project(project_id: int):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # Get project
-    cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
-    project = cursor.fetchone()
-    
-    if not project:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    project_dict = dict(project)
-    
-    # Get tasks
-    cursor.execute("SELECT * FROM tasks WHERE project_id = ?", (project_id,))
-    tasks = [dict(task) for task in cursor.fetchall()]
-    
-    # Get updates
-    cursor.execute("SELECT * FROM updates WHERE project_id = ? ORDER BY date DESC", (project_id,))
-    updates = [dict(update) for update in cursor.fetchall()]
-    
-    project_dict['tasks'] = tasks
-    project_dict['updates'] = updates
-    
-    conn.close()
-    cursor.close()
-    return project_dict
-
-
-@app.post("/orchestrateProjects")
-async def orchestrate_project(project:Project):
-    tasks = project.tasks
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       INSERT INTO project(name,  completion_status, description) 
-                       VALUES(:name, :completion_status, :description)
-                       """
-                       ,{'name':project.name, "completion_status":project.status, "description":project.description})
-        project_id = cursor.lastrowid
-        for task in tasks:
-            cursor.execute("INSERT INTO task(name,start_date,status,description, project_id) VALUES(:name,:start_date,:status,:description, :project_id)"
-                           , {"name":task.name,"start_date":task.start_date,"status":task.status,"description":task.description, "project_id":project_id})
-        conn.commit()
-        return JSONResponse(content={"message": "Item created"}, status_code=201)
-    except Exception as e:
-        if conn != None:
-            conn.rollback()
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-    finally:
-        if conn != None:
-            conn.close()
 
 if os.path.exists("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
