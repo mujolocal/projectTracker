@@ -124,6 +124,3 @@
 //     }
 // }
 
-// function closeProjectModal() {
-//     document.getElementById('projectModal').style.display = 'none';
-// }

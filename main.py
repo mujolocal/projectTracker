@@ -70,7 +70,7 @@ def init_db():
             day_of_week INTEGER,
             day_of_month INTEGER,
             hour_of_day INTEGER,
-            int task_id ,
+            task_id INTEGER,
             FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE CASCADE
         )
     """)
