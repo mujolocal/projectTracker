@@ -50,7 +50,7 @@ def init_db():
             start_date TEXT,
             end_date TEXT,
             status TEXT DEFAULT 'not_started',
-            is_scheduled_task BOLLEAN DEFAULS 0 
+            is_scheduled_task BOLLEAN DEFAULT 0 
         )
     """)
     
@@ -85,7 +85,7 @@ class Task(BaseModel):
     name: str
     start_date: Optional[str] = None
     end_date: Optional[str] = None
-    description: str
+    description: Optional[str] = None
     status: str = "not_started"
 
 class TaskUpdate(BaseModel):
@@ -144,7 +144,7 @@ async def get_task(id:int):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""SELECT task.id as id, task.name, task.description, task.start_date
+        cursor.execute("""SELECT task.id as id, task.name, task.description, task.start_date, task.status
                        FROM task 
                        WHERE  task.id=:id""",{"id":id})
         task = cursor.fetchone()
