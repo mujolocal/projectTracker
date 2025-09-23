@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -8,8 +9,29 @@ import sqlite3
 import json
 from datetime import datetime
 import os
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+import datetime
 
-app = FastAPI(title="Task Tracker API")
+def printJob():
+    print("running Task")
+    print(f"Job ran at {datetime.datetime.now()}")
+
+scheduler = AsyncIOScheduler()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    printJob()
+    print("app started")
+    trigger = CronTrigger(hour=2, minute=0) 
+    scheduler.add_job(printJob, trigger)
+    scheduler.start()
+    yield
+    scheduler.shutdown()
+    print("the app has shutdown")
+
+
+app = FastAPI(title="Task Tracker API", lifespan=lifespan)
 
 # Enable CORS for local development
 app.add_middleware(
@@ -37,6 +59,7 @@ def init_db():
             date_complete TEXT,
             completion_status TEXT DEFAULT 'not_started',
             date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                
         )
     """)
     
@@ -49,8 +72,9 @@ def init_db():
             description TEXT,
             start_date TEXT,
             end_date TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             status TEXT DEFAULT 'not_started',
-            is_scheduled_task BOLLEAN DEFAULT 0 
+            occurance_id INTEGER
         )
     """)
     
@@ -67,11 +91,7 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS occurances (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            day_of_week INTEGER,
-            day_of_month INTEGER,
-            hour_of_day INTEGER,
-            task_id INTEGER,
-            FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE CASCADE
+            repetition STRING NOT NULL
         )
     """)
     
@@ -215,6 +235,22 @@ def addIndependentTask(task:Task):
         
 @app.get("/schedule")
 async def check_schedule():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT * FROM task WHERE occurance_id IS NOT NULL and status NOT IN ('cancelled', 'completed', 'failed');
+        """)
+        conn.commit()
+        incompleteRecurringTasks = [dict(row) for row in cursor.fetchall()]
+        cursor.execute("""
+            SELECT DISTINCT o.id id, o.repetition repetition, t.name name, t.desctiption description, t.created_at createdAt  
+            FROM occurances o INNER JOIN task t on occurances.id=task.occurances_id
+        """)
+        
+        conn.commit()
+    except Exception as e:
+        print("who know what this exception is")
     # get schedules
     # see which schedules are about to come up
     # get incomplete scheduled tasks
@@ -226,6 +262,10 @@ async def check_schedule():
 
 if os.path.exists("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+
+
+
 
 if __name__ == "__main__":
     import uvicorn

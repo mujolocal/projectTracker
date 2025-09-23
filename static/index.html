@@ -36,58 +36,6 @@
 
             
         </div>
-
-                                            <!-- New/Edit Project Modal -->
-        <div id="projectModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="projectModalTitle">New Project</h2>
-                    <span class="close" onclick="closeProjectModal()">&times;</span>
-                </div>
-                <form id="projectForm" onsubmit="orchestrateNewProject(event)">
-                    <div class="form-group">
-                        <label for="projectName">Project Name:</label>
-                        <input type="text" id="projectName" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="projectDescription">Description:</label>
-                        <textarea rows="3" cols="30"  id="projectDescription" name="description" class="form-control form-description" required></textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="projectDateCreated">Date Created:</label>
-                            <input type="date" id="projectDateCreated" name="date_created" class="form-control" >
-                        </div>
-                        <div class="form-group">
-                            <label for="projectStatus">Status:</label>
-                            <select id="projectStatus" name="status" class="form-control">
-                                <option value="not_started">Not Started</option>
-                                <option value="in_progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                                <option value="on_pause">On Pause</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- tasks Section -->
-                    <button class="btn small-btn"  type="button"  id="creatTaskButton">Create task</button>
-                    <div>
-                        <div id="tasksList" class="item-list"></div>
-                    </div>
-
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-                        <button type="button" class="btn" onclick="closeProjectModal()">Cancel</button>
-                        <button type="submit" class="btn btn-success">Save Project</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-
-
-
-                        <!-- success popup -->
         <div id="popupOverlay" class="popup-overlay" onclick="closePopup(event)">
             <div class="popup" onclick="event.stopPropagation()">
                 <div id="popupHeader" class="popup-header" >
@@ -105,7 +53,7 @@
             </div>
         </div>
         <div id="toastContainer" class="toast-container"></div>
-             <!-- task update -->
+             <!-- task Form -->
 
 
         <div id="taskUpdateOverlay" class="task-overlay" >
@@ -139,8 +87,28 @@
                                 <input type="date" id="endDate" name="end_date" class="form-input">
                             </div>
                             
-                            <div class="form-group full-width" id="updateFormNotes">
-                                
+                            <div class="form-group-row full-width" id="recurringType">
+                                <div style="display: flex; flex-direction: column;">
+                                    <label class="form-label" for="recurrance">recurring Type</label>
+                                    <select id="recurringType" name="recurringType" class="form-select">
+                                        <option value="None">None</option>
+                                        <option value="day_of_week">Day of Week</option>
+                                        <option value="days">days</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <label class="form-label" for="recurrance">Occurances</label>
+                                    <select id="recurringFrequency" name="recurringFrequency" class="form-select">
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <label class="form-label" for="recurrance">recurring Type</label>
+                                    <select id="recurringType" name="status" class="form-select">
+                                        <option value="None">None</option>
+                                        <option value="day_of_week">Day of Week</option>
+                                        <option value="days">days</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div class="form-group full-width">
@@ -151,6 +119,7 @@
                                     <option value="completed">Completed</option>
                                     <option value="on_hold">On Hold</option>
                                     <option value="cancelled">Canceled</option>
+                                    <option value="failed">Failed</option>
                                 </select>
                             </div>
                             <div id="newNote"></div>

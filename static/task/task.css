@@ -99,6 +99,11 @@
     display: flex;
     flex-direction: column;
 }
+.form-group-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
 
 .form-group.full-width {
     grid-column: 1 / -1;

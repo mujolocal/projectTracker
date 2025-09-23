@@ -270,6 +270,40 @@ const  createTaskCard=(task)=> {
   return div;
 }
 
+const populateDayOfWeek=()=>{
+  const select = document.getElementById("")
+    select.id = "recurringType";
+    select.name = "status";
+    select.className = "form-select";
+    select.multiple = true; // allow multi-clickable options
+
+    // Default options
+    const defaultOptions = [
+        { value: "None", text: "None" },
+        { value: "day_of_week", text: "Day of Week" },
+        { value: "days", text: "Days" }
+    ];
+
+    defaultOptions.forEach(optData => {
+        const option = document.createElement("option");
+        option.value = optData.value;
+        option.textContent = optData.text;
+        select.appendChild(option);
+    });
+
+    // Days of the week options
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    days.forEach(day => {
+        const option = document.createElement("option");
+        option.value = day.toLowerCase();
+        option.textContent = day;
+        select.appendChild(option);
+    });
+
+    container.appendChild(label);
+    container.appendChild(select);
+}
+
 const updateTaskButton = document.getElementById('updateTaskButton')
 updateTaskButton.addEventListener('click', updateTask);
 addClick("taskUpdateOverlay",closeUpdateForm );
