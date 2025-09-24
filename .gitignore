@@ -1,4 +1,5 @@
 __pycache__/
 **/projects.db
+**/taskTracker.db
 venv/
 env/

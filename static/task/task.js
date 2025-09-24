@@ -6,14 +6,16 @@ import { Note } from '../note/note.js';
 
 
 let currentRecordId = null;
-let independentTasks = []
+let independentTasks = [];
+let taskName = "";
 
-
-export const  openTaskUpdateForm=(id)=> {
-  
+export const  openTaskUpdateForm=( id)=> {
+  if(id){  
     fetch(`${API_BASE}/task/${id}`)
     .then((response)=> response.json())
     .then((recordData)=>{ 
+      document.getElementById('recurranceType').value = ""
+      document.getElementById('recurringSection').style.display = "none";
       const newNote = Note();
       const oldNotes = recordData.notes.map(_note => Note(_note.id, _note.body, _note.created_at))
       document.getElementById('taskId').value = recordData.id || 1;
@@ -28,6 +30,23 @@ export const  openTaskUpdateForm=(id)=> {
       document.body.style.overflow = 'hidden';
     })
     .catch((e)=>{console.log(e)});
+  }else{
+      const updateTaskButton =   document.getElementById("updateTaskButton");
+      updateTaskButton.textContent = "Create Task";
+      updateTaskButton.removeEventListener("click",updateTask)
+      updateTaskButton.addEventListener("click", createFullTask);
+      const newNote = Note();
+      document.getElementById('taskId').value = "";
+      document.getElementById('recordName').value = taskName;
+      document.getElementById('recordDescription').value =  '';
+      document.getElementById('startDate').value =  '';
+      document.getElementById('endDate').value =  '';
+      document.getElementById('recordStatus').value =  'not_started';
+      document.getElementById("newNote").replaceChildren();
+      document.getElementById('recurringSection').style.display = "block";
+      document.getElementById('taskUpdateOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
+  }
     
 }
 
@@ -39,20 +58,11 @@ function closeUpdateForm(event) {
     document.getElementById('taskUpdateOverlay').classList.remove('show');
     document.body.style.overflow = 'auto';
     currentRecordId = null;
+    resetTaskButton();
 }
 
-// function removeToast(closeBtn) {
-//     const toast = closeBtn.parentElement;
-//     toast.style.animation = 'slideOut 0.3s ease forwards';
-//     setTimeout(() => {
-//         if (toast.parentElement) {
-//             toast.parentElement.removeChild(toast);
-//         }
-//     }, 300);
-// }
-
-
 function updateTask(){
+  
     let task = {
         taskId: document.getElementById('taskId').value,
         status: document.getElementById('recordStatus').value,
@@ -75,9 +85,42 @@ function updateTask(){
 }
 
 
+function createFullTask(){
+    let task = {
+        name: document.getElementById("recordName").value,
+        startDate: document.getElementById("startDate").value,
+        endDate: document.getElementById("endDate").value,
+        description: document.getElementById("recordDescription").value,
+        status: document.getElementById('recordStatus').value,
+        recurranceType: document.getElementById('recurranceType').value
+    };
+    fetch(`${API_BASE}/task`,{
+        method: "POST"
+        ,headers:{"Content-Type":"application/json"}
+        , body:JSON.stringify(task)
+    }).then((r)=>{
+        if(!r.ok){
+            throw new Error("failed to update")
+        }
+        showPopup('success', 'yay you updated the status of this thing', 'good for you');
+        closeUpdateForm();
+
+    }).catch((e)=>{
+        showPopup('error', 'Something failed:', `${e}`);
+    }).finally(()=>{
+      resetTaskButton()
+    })
+}
+
+const resetTaskButton=()=>{
+  const updateTaskButton =   document.getElementById("updateTaskButton");
+      updateTaskButton.textContent = "Update Task";
+      updateTaskButton.removeEventListener("click",createFullTask)
+      updateTaskButton.addEventListener("click", updateTask);
+}
 
 export const getIndependentTasks = async()=>{
-    const task_response = await fetch(`${API_BASE}/independenttask`);
+    const task_response = await fetch(`${API_BASE}/task`);
     independentTasks = await task_response.json();
 }
 
@@ -87,6 +130,32 @@ export const  renderIndependentTasksList=()=> {
     const tasks = independentTasks.map((task, index) => createTaskCard(task));
     container.replaceChildren(...tasks);
 }
+export function createTask() {
+    let newTask = {}
+    newTask.name = prompt('task name:');
+    newTask.recurring = prompt('Is task recurring or would you like to add details (leave blank for no) :');
+    //if new task name but not recurring just make the task
+    //if new task recurring then open the task box
+
+    if (newTask.name && newTask.recurring) {
+      taskName = newTask.name;
+      openTaskUpdateForm();
+    }else if(newTask.name){
+        fetch(`${API_BASE}/task`,{
+            method: "POST"
+            ,headers:{"Content-Type":"application/json"}
+            , body:JSON.stringify(newTask)
+        }).then((r)=>{
+            showPopup('success', 'Your project has been created. now go get it done', 'good for you');
+            getIndependentTasks().then(()=>renderIndependentTasksList())
+        }).catch((e)=>{
+            showPopup('error', 'Something failed:', `${e}`);
+        })
+    renderIndependentTasksList()   
+        
+    }
+}
+
 
 const  createTaskCard=(task)=> {
   const div = document.createElement("div");

@@ -1,15 +1,31 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import  Optional
 import sqlite3
-import json
-from datetime import datetime
 import os
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
-app = FastAPI(title="Task Tracker API")
+
+
+scheduler = AsyncIOScheduler()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("app started")
+    trigger = CronTrigger(hour=2, minute=0) 
+    scheduler.add_job(check_schedule, trigger)
+    scheduler.start()
+    yield
+    scheduler.shutdown()
+    print("the app has shutdown")
+
+
+app = FastAPI(title="Task Tracker API", lifespan=lifespan)
 
 # Enable CORS for local development
 app.add_middleware(
@@ -21,24 +37,11 @@ app.add_middleware(
 )
 
 # Database setup
-DATABASE = "projects.db"
+DATABASE = "taskTracker.db"
 
 def init_db():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    
-    # Projects table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS project (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT,
-            date_started TEXT,
-            date_complete TEXT,
-            completion_status TEXT DEFAULT 'not_started',
-            date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
     
     # tasks table
     cursor.execute("""
@@ -49,7 +52,10 @@ def init_db():
             description TEXT,
             start_date TEXT,
             end_date TEXT,
-            status TEXT DEFAULT 'not_started'
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            status TEXT DEFAULT 'not_started',
+            recurrance_id INTEGER,
+            is_recurrance_template INTEGER DEFAULT 0
         )
     """)
     
@@ -64,13 +70,10 @@ def init_db():
         )
     """)
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS occurances (
+        CREATE TABLE IF NOT EXISTS recurrance (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            day_of_week INTEGER,
-            day_of_month INTEGER,
-            hour_of_day INTEGER,
-            task_id INTEGER,
-            FOREIGN KEY (task_id) REFERENCES task (id) ON DELETE CASCADE
+            type STRING NOT NULL,
+            createad_as TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     
@@ -84,30 +87,17 @@ class Task(BaseModel):
     name: str
     start_date: Optional[str] = None
     end_date: Optional[str] = None
-    description: str
+    description: Optional[str] = None
     status: str = "not_started"
+    recurranceType: Optional[str] = None
+
 
 class TaskUpdate(BaseModel):
     taskId: int
     status: str
     newNote: str
 
-class Project(BaseModel):
-    name: str
-    date_created: str
-    status: str = "not_started"
-    description: str 
-    tasks: List[Task] = []
 
-
-class ProjectResponse(BaseModel):
-    id: int
-    name: str
-    date_started: str
-    completion_status: str
-    tasks: List[Task] = []
-    created_at: str
-    updated_at: str
 
 # Database connection helper
 def get_db_connection():
@@ -115,18 +105,20 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# API Routes
 
 @app.get("/")
 async def root():
-    return {"message": "Project Tracker API"}
+    return {"message": "Task Tracker API"}
 
-@app.get("/independenttask")
-async def getIndependentTasks():
+@app.get("/task")
+async def getTasks():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT * FROM task WHERE project_id IS NULL AND status NOT IN ('cancelled', 'completed')
+        SELECT * FROM task 
+        WHERE project_id IS NULL 
+            AND status NOT IN ('cancelled', 'completed', 'failed')
+            AND is_recurrance_template=0
         ORDER BY 
             CASE 
                 WHEN status = 'in_progress' THEN 1
@@ -143,7 +135,7 @@ async def get_task(id:int):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""SELECT task.id as id, task.name, task.description, task.start_date
+        cursor.execute("""SELECT task.id as id, task.name, task.description, task.start_date, task.status
                        FROM task 
                        WHERE  task.id=:id""",{"id":id})
         task = cursor.fetchone()
@@ -155,9 +147,7 @@ async def get_task(id:int):
                        WHERE task_id=:id
                        ORDER BY id DESC""",{"id":id})
         notes = [dict(row) for row in cursor.fetchall()]
-        print(notes)
         task_dict['notes'] = notes
-        print(task_dict)
         return JSONResponse(content=task_dict, status_code=200)
     except Exception as e:
         if conn != None:
@@ -191,15 +181,43 @@ async def update_task(taskUpdate: TaskUpdate):
     
 @app.post("/task", status_code=201)
 async def add_task(task:Task):
-    if(task.project_id == None):
-        addIndependentTask(task)
+    if( task.recurranceType):
+        addRecurringTask(task)
     else:
-        addProjectTask(task)
-    
-    return task 
+        addTask(task)
+     
+def addRecurringTask(task:Task):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # create recurrance reccord
+        cursor.execute(
+            """
+                INSERT INTO recurrance(type)
+                values(?);
+            """, [task.recurranceType]) # type: ignore
+        recurranceId = cursor.lastrowid
+        # create recurrance template
+        cursor.execute("""
+            INSERT INTO task ( name, start_date, end_date, status, description,  recurrance_id, is_recurrance_template)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (task.name, task.start_date, task.end_date, "recurrance_template", task.description, recurranceId, 1))
+        # create actual instance of task
+        cursor.execute("""
+            INSERT INTO task ( name, start_date, end_date, status, description, recurrance_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (task.name, task.start_date, task.end_date, task.status, task.description, recurranceId))
+        conn.commit()
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
-
-def addIndependentTask(task:Task):
+# recurrance_id INTEGER,
+# recurrance_template INTEGER DEFAULT 0
+def addTask(task:Task):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -215,270 +233,52 @@ def addIndependentTask(task:Task):
         cursor.close()
         conn.close()
         
-        
 
-
-def addProjectTask(task:Task):
-    project_id = task.project_id
+async def check_schedule():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id FROM projects WHERE id = ?", (project_id,))
-        if not cursor.fetchone():
-            conn.close()
-            raise HTTPException(status_code=404, detail="Project not found")
-        
         cursor.execute("""
-            INSERT INTO task (project_id, name, start_date, end_date, status)
-            VALUES (?, ?, ?, ?, ?)
-        """, (project_id, task.name, task.start_date, task.end_date, task.status))
+            UPDATE task
+            SET status = 'failed'
+            WHERE recurrance_id IS NOT NULL
+                AND is_recurrance_template=0 
+                AND status NOT IN ('cancelled', 'completed', 'failed')
+                AND EXISTS (
+                    SELECT 1 FROM recurrance
+                        WHERE recurrance.id = task.recurrance_id
+                            AND recurrance.type = 'daily');
+                
+        """)
+        cursor.execute("""
+            INSERT INTO task (name, description, recurrance_id)
+            SELECT task.name, task.description, recurrance.id
+            FROM task
+            INNER JOIN recurrance ON task.recurrance_id = recurrance.id
+            WHERE task.recurrance_id IS NOT NULL
+                AND task.is_recurrance_template=1
+                AND recurrance.type = 'daily';
+        """)
         conn.commit()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
+        conn.rollback()
     finally:
-        cursor.close()
         conn.close()
-        
-
-
-@app.get("/projects")
-async def get_projects():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM project ORDER BY date_started DESC")
-    projects = cursor.fetchall()
-    
-    result = []
-    for project in projects:
-        project_dict = dict(project)
-        cursor.execute("SELECT * FROM task WHERE project_id = ?", (project['id'],))
-        tasks = [dict(task) for task in cursor.fetchall()]
-        updates = []
-        
-        project_dict['tasks'] = tasks
-        project_dict['updates'] = updates
-        result.append(project_dict)
-    cursor.close()
-    conn.close()
-    return result
-
-@app.get("/projects/{project_id}", response_model=ProjectResponse)
-async def get_project(project_id: int):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # Get project
-    cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
-    project = cursor.fetchone()
-    
-    if not project:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    project_dict = dict(project)
-    
-    # Get tasks
-    cursor.execute("SELECT * FROM tasks WHERE project_id = ?", (project_id,))
-    tasks = [dict(task) for task in cursor.fetchall()]
-    
-    # Get updates
-    cursor.execute("SELECT * FROM updates WHERE project_id = ? ORDER BY date DESC", (project_id,))
-    updates = [dict(update) for update in cursor.fetchall()]
-    
-    project_dict['tasks'] = tasks
-    project_dict['updates'] = updates
-    
-    conn.close()
-    cursor.close()
-    return project_dict
-
-
-@app.post("/orchestrateProjects")
-async def orchestrate_project(project:Project):
-    tasks = project.tasks
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       INSERT INTO project(name,  completion_status, description) 
-                       VALUES(:name, :completion_status, :description)
-                       """
-                       ,{'name':project.name, "completion_status":project.status, "description":project.description})
-        project_id = cursor.lastrowid
-        for task in tasks:
-            cursor.execute("INSERT INTO task(name,start_date,status,description, project_id) VALUES(:name,:start_date,:status,:description, :project_id)"
-                           , {"name":task.name,"start_date":task.start_date,"status":task.status,"description":task.description, "project_id":project_id})
-        conn.commit()
-        return JSONResponse(content={"message": "Item created"}, status_code=201)
-    except Exception as e:
-        if conn != None:
-            conn.rollback()
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-    finally:
-        if conn != None:
-            conn.close()
-
-
-    
-            
-
-    # cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    # tables = cursor.fetchall()
-    # for table in tables:
-    #     print(table['name'])
-    # create project
-    # get project id
-    # add tasks
-    # add updates
-    # rollback all on failure
-    # return 201 on success
+    # get schedules
+    # see which schedules are about to come up
+    # get incomplete scheduled tasks
+    # set Those tasks to failed
+    # generate new recurring tasks
     pass
 
 
-# @app.post("/projects", response_model=ProjectResponse)
-# async def create_project(project: Project):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-    
-#     cursor.execute("""
-#         INSERT INTO projects (name, date_started, completion_status)
-#         VALUES (?, ?, ?)
-#     """, (project.name, project.date_started, project.status))
-    
-#     project_id = cursor.lastrowid
-#     conn.commit()
-    
-#     # Get the created project
-#     cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
-#     created_project = cursor.fetchone()
-    
-#     result = dict(created_project)
-#     result['tasks'] = []
-#     result['updates'] = []
-    
-#     conn.close()
-#     return result
 
-# @app.put("/projects/{project_id}", response_model=ProjectResponse)
-# async def update_project(project_id: int, project: Project):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-    
-#     cursor.execute("""
-#         UPDATE projects 
-#         SET name = ?, date_started = ?, completion_status = ?, updated_at = CURRENT_TIMESTAMP
-#         WHERE id = ?
-#     """, (project.name, project.date_started, project.status, project_id))
-    
-#     if cursor.rowcount == 0:
-#         conn.close()
-#         raise HTTPException(status_code=404, detail="Project not found")
-    
-#     conn.commit()
-#     conn.close()
-    
-#     # Return updated project
-#     return await get_project(project_id)
-
-# @app.delete("/projects/{project_id}")
-# async def delete_project(project_id: int):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-    
-#     cursor.execute("DELETE FROM projects WHERE id = ?", (project_id,))
-    
-#     if cursor.rowcount == 0:
-#         conn.close()
-#         raise HTTPException(status_code=404, detail="Project not found")
-    
-#     conn.commit()
-#     conn.close()
-    
-#     return {"message": "Project deleted successfully"}
-
-# task routes
-
-
-# @app.put("/projects/{project_id}/tasks/{task_id}")
-# async def update_task(project_id: int, task_id: int, task: task):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-    
-#     cursor.execute("""
-#         UPDATE tasks 
-#         SET name = ?, start_date = ?, end_date = ?, status = ?
-#         WHERE id = ? AND project_id = ?
-#     """, (task.name, task.start_date, task.end_date, task.status, task_id, project_id))
-    
-#     if cursor.rowcount == 0:
-#         conn.close()
-#         raise HTTPException(status_code=404, detail="task not found")
-    
-#     conn.commit()
-#     conn.close()
-    
-#     return {"message": "task updated successfully"}
-
-# @app.delete("/projects/{project_id}/tasks/{task_id}")
-# async def delete_task(project_id: int, task_id: int):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-    
-#     cursor.execute("DELETE FROM tasks WHERE id = ? AND project_id = ?", (task_id, project_id))
-    
-#     if cursor.rowcount == 0:
-#         conn.close()
-#         raise HTTPException(status_code=404, detail="task not found")
-    
-#     conn.commit()
-#     conn.close()
-    
-#     return {"message": "task deleted successfully"}
-
-# Update routes
-# @app.post("/projects/{project_id}/updates")
-# async def add_update(project_id: int, update: Update):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-    
-#     # Check if project exists
-#     cursor.execute("SELECT id FROM projects WHERE id = ?", (project_id,))
-#     if not cursor.fetchone():
-#         conn.close()
-#         raise HTTPException(status_code=404, detail="Project not found")
-    
-#     cursor.execute("""
-#         INSERT INTO updates (project_id, note, date)
-#         VALUES (?, ?, ?)
-#     """, (project_id, update.note, update.date))
-    
-#     update_id = cursor.lastrowid
-#     conn.commit()
-#     conn.close()
-    
-#     return {"id": update_id, "message": "Update added successfully"}
-
-# @app.delete("/projects/{project_id}/updates/{update_id}")
-# async def delete_update(project_id: int, update_id: int):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-    
-#     cursor.execute("DELETE FROM updates WHERE id = ? AND project_id = ?", (update_id, project_id))
-    
-#     if cursor.rowcount == 0:
-#         conn.close()
-#         raise HTTPException(status_code=404, detail="Update not found")
-    
-#     conn.commit()
-#     conn.close()
-    
-#     return {"message": "Update deleted successfully"}
-
-# Serve static files
 if os.path.exists("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+
+
+
 
 if __name__ == "__main__":
     import uvicorn

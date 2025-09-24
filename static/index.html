@@ -4,7 +4,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Project Tracker</title>
+        <title>Task Tracker</title>
         <link rel="stylesheet" href="task/task.css">
         <link rel="stylesheet" href="utilities/popup.css">
         <script src="index.js" type="module" ></script>
@@ -13,17 +13,14 @@
     <body>
         <div class="container">
             <header>
-                <h1>📋 Project Tracker</h1>
-                <p>Manage your projects, tasks, and updates all in one place</p>
+                <h1>📋 Task Tracker</h1>
+                <p>Manage your tasks, lists, projects and updates all in one place</p>
             </header>
 
             <div class="controls">
                 <button class="btn" id="newTaskButton">
                     ➕ New Task
                 </button>
-                <!-- <button class="btn" onclick="openNewProjectModal()">
-                    ➕ New Project
-                </button> -->
                 <button class="btn" id="refreshButton">
                     🔄 Refresh
                 </button>
@@ -36,58 +33,6 @@
 
             
         </div>
-
-                                            <!-- New/Edit Project Modal -->
-        <div id="projectModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="projectModalTitle">New Project</h2>
-                    <span class="close" onclick="closeProjectModal()">&times;</span>
-                </div>
-                <form id="projectForm" onsubmit="orchestrateNewProject(event)">
-                    <div class="form-group">
-                        <label for="projectName">Project Name:</label>
-                        <input type="text" id="projectName" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="projectDescription">Description:</label>
-                        <textarea rows="3" cols="30"  id="projectDescription" name="description" class="form-control form-description" required></textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="projectDateCreated">Date Created:</label>
-                            <input type="date" id="projectDateCreated" name="date_created" class="form-control" >
-                        </div>
-                        <div class="form-group">
-                            <label for="projectStatus">Status:</label>
-                            <select id="projectStatus" name="status" class="form-control">
-                                <option value="not_started">Not Started</option>
-                                <option value="in_progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                                <option value="on_pause">On Pause</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- tasks Section -->
-                    <button class="btn small-btn"  type="button" onclick="createTask()">Add task</button>
-                    <div>
-                        <div id="tasksList" class="item-list"></div>
-                    </div>
-
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-                        <button type="button" class="btn" onclick="closeProjectModal()">Cancel</button>
-                        <button type="submit" class="btn btn-success">Save Project</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-
-
-
-                        <!-- success popup -->
         <div id="popupOverlay" class="popup-overlay" onclick="closePopup(event)">
             <div class="popup" onclick="event.stopPropagation()">
                 <div id="popupHeader" class="popup-header" >
@@ -105,7 +50,7 @@
             </div>
         </div>
         <div id="toastContainer" class="toast-container"></div>
-             <!-- task update -->
+             <!-- task Form -->
 
 
         <div id="taskUpdateOverlay" class="task-overlay" >
@@ -126,12 +71,12 @@
                             
                             <div class="form-group full-width">
                                 <label class="form-label" for="recordDescription">Description</label>
-                                <textarea id="recordDescription" name="description" class="form-textarea" placeholder="Enter task description..." readonly></textarea>
+                                <textarea id="recordDescription" name="description" class="form-textarea" placeholder="Enter task description..." ></textarea>
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label" for="startDate">Start Date</label>
-                                <input type="date" id="startDate" name="start_date" class="form-input" readonly>
+                                <input type="date" id="startDate" name="start_date" class="form-input" >
                             </div>
                             
                             <div class="form-group">
@@ -139,8 +84,18 @@
                                 <input type="date" id="endDate" name="end_date" class="form-input">
                             </div>
                             
-                            <div class="form-group full-width" id="updateFormNotes">
-                                
+                            <div class="form-group-row full-width" style="display:none ;" id="recurringSection">
+                                <div style="display: flex; flex-direction: column; ">
+                                    <label class="form-label" for="recurrance">Recurrance: </label>
+                                    <select id="recurranceType" name="recurranceType" class="form-select">
+                                        <option value="" selected >None</option>
+                                        <option value="daily">Daily</option>
+                                    </select>
+                                </div>
+                                <!-- TODO: the occurances will have two other features, 
+                                 frequency type, so if its weekly, 1 every, 2 every other 
+                                 week, day so for monthly its like 1 and for weekly it 
+                                 like wednesday -->
                             </div>
 
                             <div class="form-group full-width">
@@ -150,6 +105,9 @@
                                     <option value="in_progress">In Progress</option>
                                     <option value="completed">Completed</option>
                                     <option value="on_hold">On Hold</option>
+                                    <option value="cancelled">Canceled</option>
+                                    <option value="failed">Failed</option>
+
                                 </select>
                             </div>
                             <div id="newNote"></div>
