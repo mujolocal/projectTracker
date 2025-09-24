@@ -96,6 +96,7 @@ class TaskUpdate(BaseModel):
     taskId: int
     status: str
     newNote: str
+    description: str
 
 
 
@@ -161,13 +162,18 @@ async def get_task(id:int):
 async def update_task(taskUpdate: TaskUpdate):
     conn = get_db_connection()
     cursor = conn.cursor()
+    params = [taskUpdate.status]
+    sql = "UPDATE task SET status = ?"
+    if taskUpdate.description:
+        sql += ", description = ?"
+        params.append(taskUpdate.description)
+    sql += " WHERE id = ?"
+    params.append(str(taskUpdate.taskId))
     try:
-        cursor.execute("""
-            UPDATE task SET status = ? WHERE id = ?;
-        """, [taskUpdate.status, taskUpdate.taskId])
+        cursor.execute(sql, params)
         if(taskUpdate.newNote):
             cursor.execute("""INSERT INTO note(task_id, body) 
-                       VALUES(?,?)""",[taskUpdate.taskId, taskUpdate.newNote])
+                       VALUES(?,?)""",[taskUpdate.taskId,  taskUpdate.newNote])
         conn.commit()
 
     except Exception as e:
