@@ -9,8 +9,12 @@ Coming Soon **in no specific order** :
 2. projects
 3. lists
 4. notifications
-5. reucurring tasks
+5. reucurring tasks -- added 9/24/2025
 6. Authentication -- maybe never --
+
+#### things that have come up
+1. due to reccuring task imp, gamification and tracking has become possible
+ 
 
 ### Stack
 Python3
