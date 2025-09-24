@@ -127,7 +127,7 @@ const resetTaskButton=()=>{
 }
 
 export const getIndependentTasks = async()=>{
-    const task_response = await fetch(`${API_BASE}/independenttask`);
+    const task_response = await fetch(`${API_BASE}/task`);
     independentTasks = await task_response.json();
 }
 

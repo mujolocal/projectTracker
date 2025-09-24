@@ -74,7 +74,8 @@ def init_db():
             end_date TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             status TEXT DEFAULT 'not_started',
-            occurance_id INTEGER
+            recurrance_id INTEGER,
+            is_recurrance_template INTEGER DEFAULT 0
         )
     """)
     
@@ -89,9 +90,10 @@ def init_db():
         )
     """)
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS occurances (
+        CREATE TABLE IF NOT EXISTS recurance (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            repetition STRING NOT NULL
+            type STRING NOT NULL
+            createad_as TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     
@@ -107,6 +109,8 @@ class Task(BaseModel):
     end_date: Optional[str] = None
     description: Optional[str] = None
     status: str = "not_started"
+    recurrance_type: Optional[str] = None
+
 
 class TaskUpdate(BaseModel):
     taskId: int
@@ -142,12 +146,15 @@ def get_db_connection():
 async def root():
     return {"message": "Project Tracker API"}
 
-@app.get("/independenttask")
-async def getIndependentTasks():
+@app.get("/task")
+async def getTasks():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT * FROM task WHERE project_id IS NULL AND status NOT IN ('cancelled', 'completed')
+        SELECT * FROM task 
+        WHERE project_id IS NULL 
+            AND status NOT IN ('cancelled', 'completed')
+            AND occurance_template=0
         ORDER BY 
             CASE 
                 WHEN status = 'in_progress' THEN 1
@@ -212,12 +219,40 @@ async def update_task(taskUpdate: TaskUpdate):
     
 @app.post("/task", status_code=201)
 async def add_task(task:Task):
-    if(task.project_id == None):
-        addIndependentTask(task)
-    return task 
+    if( task.recurrance_type):
+        # add recurring task
+        addRecurringTask(task)
+    else:
+        addTask(task)
+     
+def addRecurringTask(task:Task):
+    #  recurrance_id INTEGER,
+        # recurrance_template INTEGER DEFAULT 0
+    #  task is_recurrance type is checked for truthy in callers so will never be None 
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            """
+                INSERT INT recurrances(type)
+                values(?);
+            """, (task.recurrance_type)) # type: ignore
+        recurranceId = cursor.lastrowid
+        cursor.execute("""
+            INSERT INTO task ( name, start_date, end_date, status, description,  recurrance_id, is_recurrance_template)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (task.name, task.start_date, task.end_date, task.status, task.description, recurranceId, 1))
+        conn.commit()
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
-
-def addIndependentTask(task:Task):
+# recurrance_id INTEGER,
+# recurrance_template INTEGER DEFAULT 0
+def addTask(task:Task):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -233,24 +268,37 @@ def addIndependentTask(task:Task):
         cursor.close()
         conn.close()
         
-@app.get("/schedule")
+@app.get("/task/schedule")
 async def check_schedule():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            SELECT * FROM task WHERE occurance_id IS NOT NULL and status NOT IN ('cancelled', 'completed', 'failed');
+            UPDATE task
+            SET status = 'failed'
+            WHERE occurance_id IS NOT NULL
+                AND status NOT IN ('cancelled', 'completed', 'failed')
+                AND EXISTS (
+                    SELECT 1 FROM occurances
+                        WHERE occurances.id = task.occurance_id
+                            AND occurances.type = 'daily');
+                
         """)
-        conn.commit()
         incompleteRecurringTasks = [dict(row) for row in cursor.fetchall()]
         cursor.execute("""
-            SELECT DISTINCT o.id id, o.repetition repetition, t.name name, t.desctiption description, t.created_at createdAt  
-            FROM occurances o INNER JOIN task t on occurances.id=task.occurances_id
+            INSERT INTO task (name, description, occurance_id)
+            SELECT task.name, task.description, occurances.id
+            FROM task
+            INNER JOIN occurances ON task.occurance_id = occurances.id
+            WHERE task.occurance_id IS NOT NULL
+                AND occurances.type = 'daily';
         """)
-        
         conn.commit()
     except Exception as e:
         print("who know what this exception is")
+        conn.rollback()
+    finally:
+        conn.close()
     # get schedules
     # see which schedules are about to come up
     # get incomplete scheduled tasks
