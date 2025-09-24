@@ -4,7 +4,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Project Tracker</title>
+        <title>Task Tracker</title>
         <link rel="stylesheet" href="task/task.css">
         <link rel="stylesheet" href="utilities/popup.css">
         <script src="index.js" type="module" ></script>
@@ -13,17 +13,14 @@
     <body>
         <div class="container">
             <header>
-                <h1>📋 Project Tracker</h1>
-                <p>Manage your projects, tasks, and updates all in one place</p>
+                <h1>📋 Task Tracker</h1>
+                <p>Manage your tasks, lists, projects and updates all in one place</p>
             </header>
 
             <div class="controls">
                 <button class="btn" id="newTaskButton">
                     ➕ New Task
                 </button>
-                <!-- <button class="btn" onclick="openNewProjectModal()">
-                    ➕ New Project
-                </button> -->
                 <button class="btn" id="refreshButton">
                     🔄 Refresh
                 </button>
@@ -87,28 +84,18 @@
                                 <input type="date" id="endDate" name="end_date" class="form-input">
                             </div>
                             
-                            <div class="form-group-row full-width" id="recurringType">
-                                <div style="display: flex; flex-direction: column;">
-                                    <label class="form-label" for="recurrance">recurring Type</label>
-                                    <select id="recurringType" name="recurringType" class="form-select">
-                                        <option value="None">None</option>
-                                        <option value="day_of_week">Day of Week</option>
-                                        <option value="days">days</option>
+                            <div class="form-group-row full-width" style="display:none ;" id="recurringSection">
+                                <div style="display: flex; flex-direction: column; ">
+                                    <label class="form-label" for="recurrance">Recurrance: </label>
+                                    <select id="recurranceType" name="recurranceType" class="form-select">
+                                        <option value="" selected >None</option>
+                                        <option value="daily">Daily</option>
                                     </select>
                                 </div>
-                                <div style="display: flex; flex-direction: column;">
-                                    <label class="form-label" for="recurrance">Occurances</label>
-                                    <select id="recurringFrequency" name="recurringFrequency" class="form-select">
-                                    </select>
-                                </div>
-                                <div style="display: flex; flex-direction: column;">
-                                    <label class="form-label" for="recurrance">recurring Type</label>
-                                    <select id="recurringType" name="status" class="form-select">
-                                        <option value="None">None</option>
-                                        <option value="day_of_week">Day of Week</option>
-                                        <option value="days">days</option>
-                                    </select>
-                                </div>
+                                <!-- TODO: the occurances will have two other features, 
+                                 frequency type, so if its weekly, 1 every, 2 every other 
+                                 week, day so for monthly its like 1 and for weekly it 
+                                 like wednesday -->
                             </div>
 
                             <div class="form-group full-width">
@@ -120,6 +107,7 @@
                                     <option value="on_hold">On Hold</option>
                                     <option value="cancelled">Canceled</option>
                                     <option value="failed">Failed</option>
+
                                 </select>
                             </div>
                             <div id="newNote"></div>

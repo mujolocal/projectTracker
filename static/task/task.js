@@ -14,6 +14,8 @@ export const  openTaskUpdateForm=( id)=> {
     fetch(`${API_BASE}/task/${id}`)
     .then((response)=> response.json())
     .then((recordData)=>{ 
+      document.getElementById('recurranceType').value = ""
+      document.getElementById('recurringSection').style.display = "none";
       const newNote = Note();
       const oldNotes = recordData.notes.map(_note => Note(_note.id, _note.body, _note.created_at))
       document.getElementById('taskId').value = recordData.id || 1;
@@ -40,7 +42,8 @@ export const  openTaskUpdateForm=( id)=> {
       document.getElementById('startDate').value =  '';
       document.getElementById('endDate').value =  '';
       document.getElementById('recordStatus').value =  'not_started';
-      document.getElementById("newNote").replaceChildren(newNote);
+      document.getElementById("newNote").replaceChildren();
+      document.getElementById('recurringSection').style.display = "block";
       document.getElementById('taskUpdateOverlay').classList.add('show');
       document.body.style.overflow = 'hidden';
   }
@@ -58,18 +61,8 @@ function closeUpdateForm(event) {
     resetTaskButton();
 }
 
-// function removeToast(closeBtn) {
-//     const toast = closeBtn.parentElement;
-//     toast.style.animation = 'slideOut 0.3s ease forwards';
-//     setTimeout(() => {
-//         if (toast.parentElement) {
-//             toast.parentElement.removeChild(toast);
-//         }
-//     }, 300);
-// }
-
-
 function updateTask(){
+  
     let task = {
         taskId: document.getElementById('taskId').value,
         status: document.getElementById('recordStatus').value,
@@ -99,7 +92,7 @@ function createFullTask(){
         endDate: document.getElementById("endDate").value,
         description: document.getElementById("recordDescription").value,
         status: document.getElementById('recordStatus').value,
-        newNote: document.getElementById('newNoteId').value
+        recurranceType: document.getElementById('recurranceType').value
     };
     fetch(`${API_BASE}/task`,{
         method: "POST"
@@ -268,40 +261,6 @@ const  createTaskCard=(task)=> {
   div.appendChild(desc);
 
   return div;
-}
-
-const populateDayOfWeek=()=>{
-  const select = document.getElementById("")
-    select.id = "recurringType";
-    select.name = "status";
-    select.className = "form-select";
-    select.multiple = true; // allow multi-clickable options
-
-    // Default options
-    const defaultOptions = [
-        { value: "None", text: "None" },
-        { value: "day_of_week", text: "Day of Week" },
-        { value: "days", text: "Days" }
-    ];
-
-    defaultOptions.forEach(optData => {
-        const option = document.createElement("option");
-        option.value = optData.value;
-        option.textContent = optData.text;
-        select.appendChild(option);
-    });
-
-    // Days of the week options
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    days.forEach(day => {
-        const option = document.createElement("option");
-        option.value = day.toLowerCase();
-        option.textContent = day;
-        select.appendChild(option);
-    });
-
-    container.appendChild(label);
-    container.appendChild(select);
 }
 
 const updateTaskButton = document.getElementById('updateTaskButton')

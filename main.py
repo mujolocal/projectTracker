@@ -4,27 +4,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import  Optional
 import sqlite3
-import json
-from datetime import datetime
 import os
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-import datetime
 
-def printJob():
-    print("running Task")
-    print(f"Job ran at {datetime.datetime.now()}")
+
 
 scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    printJob()
     print("app started")
     trigger = CronTrigger(hour=2, minute=0) 
-    scheduler.add_job(printJob, trigger)
+    scheduler.add_job(check_schedule, trigger)
     scheduler.start()
     yield
     scheduler.shutdown()
@@ -43,25 +37,11 @@ app.add_middleware(
 )
 
 # Database setup
-DATABASE = "projects.db"
+DATABASE = "taskTracker.db"
 
 def init_db():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    
-    # Projects table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS project (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT,
-            date_started TEXT,
-            date_complete TEXT,
-            completion_status TEXT DEFAULT 'not_started',
-            date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                
-        )
-    """)
     
     # tasks table
     cursor.execute("""
@@ -90,9 +70,9 @@ def init_db():
         )
     """)
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS recurance (
+        CREATE TABLE IF NOT EXISTS recurrance (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type STRING NOT NULL
+            type STRING NOT NULL,
             createad_as TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -109,7 +89,7 @@ class Task(BaseModel):
     end_date: Optional[str] = None
     description: Optional[str] = None
     status: str = "not_started"
-    recurrance_type: Optional[str] = None
+    recurranceType: Optional[str] = None
 
 
 class TaskUpdate(BaseModel):
@@ -117,22 +97,7 @@ class TaskUpdate(BaseModel):
     status: str
     newNote: str
 
-class Project(BaseModel):
-    name: str
-    date_created: str
-    status: str = "not_started"
-    description: str 
-    tasks: List[Task] = []
 
-
-class ProjectResponse(BaseModel):
-    id: int
-    name: str
-    date_started: str
-    completion_status: str
-    tasks: List[Task] = []
-    created_at: str
-    updated_at: str
 
 # Database connection helper
 def get_db_connection():
@@ -140,11 +105,10 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# API Routes
 
 @app.get("/")
 async def root():
-    return {"message": "Project Tracker API"}
+    return {"message": "Task Tracker API"}
 
 @app.get("/task")
 async def getTasks():
@@ -153,8 +117,8 @@ async def getTasks():
     cursor.execute("""
         SELECT * FROM task 
         WHERE project_id IS NULL 
-            AND status NOT IN ('cancelled', 'completed')
-            AND occurance_template=0
+            AND status NOT IN ('cancelled', 'completed', 'failed')
+            AND is_recurrance_template=0
         ORDER BY 
             CASE 
                 WHEN status = 'in_progress' THEN 1
@@ -183,9 +147,7 @@ async def get_task(id:int):
                        WHERE task_id=:id
                        ORDER BY id DESC""",{"id":id})
         notes = [dict(row) for row in cursor.fetchall()]
-        print(notes)
         task_dict['notes'] = notes
-        print(task_dict)
         return JSONResponse(content=task_dict, status_code=200)
     except Exception as e:
         if conn != None:
@@ -219,29 +181,32 @@ async def update_task(taskUpdate: TaskUpdate):
     
 @app.post("/task", status_code=201)
 async def add_task(task:Task):
-    if( task.recurrance_type):
-        # add recurring task
+    if( task.recurranceType):
         addRecurringTask(task)
     else:
         addTask(task)
      
 def addRecurringTask(task:Task):
-    #  recurrance_id INTEGER,
-        # recurrance_template INTEGER DEFAULT 0
-    #  task is_recurrance type is checked for truthy in callers so will never be None 
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
+        # create recurrance reccord
         cursor.execute(
             """
-                INSERT INT recurrances(type)
+                INSERT INTO recurrance(type)
                 values(?);
-            """, (task.recurrance_type)) # type: ignore
+            """, [task.recurranceType]) # type: ignore
         recurranceId = cursor.lastrowid
+        # create recurrance template
         cursor.execute("""
             INSERT INTO task ( name, start_date, end_date, status, description,  recurrance_id, is_recurrance_template)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (task.name, task.start_date, task.end_date, task.status, task.description, recurranceId, 1))
+        """, (task.name, task.start_date, task.end_date, "recurrance_template", task.description, recurranceId, 1))
+        # create actual instance of task
+        cursor.execute("""
+            INSERT INTO task ( name, start_date, end_date, status, description, recurrance_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (task.name, task.start_date, task.end_date, task.status, task.description, recurranceId))
         conn.commit()
         
     except Exception as e:
@@ -268,7 +233,7 @@ def addTask(task:Task):
         cursor.close()
         conn.close()
         
-@app.get("/task/schedule")
+
 async def check_schedule():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -276,26 +241,26 @@ async def check_schedule():
         cursor.execute("""
             UPDATE task
             SET status = 'failed'
-            WHERE occurance_id IS NOT NULL
+            WHERE recurrance_id IS NOT NULL
+                AND is_recurrance_template=0 
                 AND status NOT IN ('cancelled', 'completed', 'failed')
                 AND EXISTS (
-                    SELECT 1 FROM occurances
-                        WHERE occurances.id = task.occurance_id
-                            AND occurances.type = 'daily');
+                    SELECT 1 FROM recurrance
+                        WHERE recurrance.id = task.recurrance_id
+                            AND recurrance.type = 'daily');
                 
         """)
-        incompleteRecurringTasks = [dict(row) for row in cursor.fetchall()]
         cursor.execute("""
-            INSERT INTO task (name, description, occurance_id)
-            SELECT task.name, task.description, occurances.id
+            INSERT INTO task (name, description, recurrance_id)
+            SELECT task.name, task.description, recurrance.id
             FROM task
-            INNER JOIN occurances ON task.occurance_id = occurances.id
-            WHERE task.occurance_id IS NOT NULL
-                AND occurances.type = 'daily';
+            INNER JOIN recurrance ON task.recurrance_id = recurrance.id
+            WHERE task.recurrance_id IS NOT NULL
+                AND task.is_recurrance_template=1
+                AND recurrance.type = 'daily';
         """)
         conn.commit()
     except Exception as e:
-        print("who know what this exception is")
         conn.rollback()
     finally:
         conn.close()
