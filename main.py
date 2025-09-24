@@ -97,9 +97,7 @@ class TaskUpdate(BaseModel):
     status: str
     newNote: str
     description: str
-
-
-
+      
 # Database connection helper
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
@@ -281,10 +279,7 @@ async def check_schedule():
 
 if os.path.exists("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
-
-
-
-
+    
 
 if __name__ == "__main__":
     import uvicorn
