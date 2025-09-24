@@ -66,7 +66,8 @@ function updateTask(){
     let task = {
         taskId: document.getElementById('taskId').value,
         status: document.getElementById('recordStatus').value,
-        newNote: document.getElementById('newNoteId').value
+        newNote: document.getElementById('newNoteId').value,
+        description: document.getElementById("recordDescription").value,
     };
     fetch(`${API_BASE}/task`,{
         method: "PUT"
