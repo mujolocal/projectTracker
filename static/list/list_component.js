@@ -239,9 +239,7 @@ export const  List=(items = [], title = "", className = "")=> {
       contentContainer.appendChild(listContainer);
     }
   }
-
-  // Fold/unfold functionality
-  foldButton.addEventListener("click", () => {
+const collapseToggle =  () => {
     isCollapsed = !isCollapsed;
     
     if (isCollapsed) {
@@ -263,13 +261,15 @@ export const  List=(items = [], title = "", className = "")=> {
         titleElement.style.paddingBottom = "8px";
       }
     }
-  });
+  }
+  // Fold/unfold functionality
+  foldButton.addEventListener("click", collapseToggle);
 
   // Initial render
   renderItems();
   updateEmptyState();
   contentContainer.appendChild(listContainer);
   container.appendChild(contentContainer);
-
+  collapseToggle()
   return container;
 }
