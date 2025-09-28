@@ -44,7 +44,7 @@ class ListItemCollection(BaseModel):
     name: str
     listItems: List[ListItem]
 
-@router.post("/create_list", status_code=201)
+@router.post("/list", status_code=201)
 def createList(list_item_collection:ListItemCollection):
     print(list_item_collection)
     conn = getDbConnection()
@@ -65,19 +65,38 @@ def createList(list_item_collection:ListItemCollection):
         conn.close()
     
     
-@router.get("/get_list",  status_code=200)
+@router.get("/list",  status_code=200)
 def getLists():
     conn = getDbConnection()
     cursor = conn.cursor()
     try:
         cursor.execute(""" SELECT list_item_collection.name as [list name], list_item_collection.id as [list id], list_item.name as [name], list_item.id as [id]  FROM list_item_collection LEFT JOIN list_item ON list_item_collection.id=list_item.list_collection_id """,)
-        lists = [dict(row) for row in cursor.fetchall()]
-        return JSONResponse(content=lists, status_code=200)
+        listDict = {}
+        for item in cursor.fetchall():
+            key = item["list name"]
+            print(f"the key is: {key}")
+            entry = {
+                "dict_id":item["list id"],
+                "id": item["id"],
+                "name": item["name"]
+            }
+            if key in listDict:
+                listDict[key].append(entry)
+            else:
+                listDict[key] = [entry]
+        print(listDict)
+
+        return JSONResponse(content=listDict, status_code=200)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
+        type, value, traceback = sys.exc_info()
+        raise HTTPException(status_code=500, detail=f"Error: {type} \n{value} \n{traceback}")
     finally:
         cursor.close()
         conn.close()
+
+@router.get("/list/{id}",  status_code=200)
+def getList():
+    pass
 
 
         
