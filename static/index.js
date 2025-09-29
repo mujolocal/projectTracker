@@ -1,7 +1,7 @@
 import {addClick} from './utilities/utilities.js';
 import {renderIndependentTasksList, getIndependentTasks} from './task/task.js';
-import { createTask } from './task/task.js';
-import { showList } from './list/list.js';
+import { createTask, showTask } from './task/task.js';
+import { createList, showList } from './list/list.js';
 // let tasks = [];
 
 const loadTasks = async()=> {
@@ -19,8 +19,10 @@ $(document).ready(function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     addClick("refreshButton", loadTasks);
-    addClick("taskButton", createTask );
-    addClick('listButton', ()=>showList("independent-tasks-container"));
+    addClick('showTasksButton', loadTasks);
+    addClick("newTaskButton", createTask );
+    addClick('showListsButton', ()=>{showList("independent-tasks-container")});
+    addClick("newListButton", createList );
 
 })
 

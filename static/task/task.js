@@ -9,6 +9,11 @@ let currentRecordId = null;
 let independentTasks = [];
 let taskName = "";
 
+export const showTask =()=>{
+
+  console.log("show task");
+}
+
 export const  openTaskUpdateForm=( id)=> {
   if(id){  
     fetch(`${API_BASE}/task/${id}`)

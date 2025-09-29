@@ -18,30 +18,20 @@ const getLists =()=>{
       })
 
 }
-
+export const createList =()=>{
+  console.log("create list");
+}
 export const showList= async (location)=>{
   const listObjects =[]
   getLists().then((r)=>{
     Object.entries(r).forEach(([key, items])=>{
       listObjects.push(List(items, key, key))
+      const devLocation = document.getElementById(location);
+      devLocation.replaceChildren(...listObjects);
     })
 
   });
-  // const all_lists = [];
-  // lists.forEach(l => {
-  //   console.log(l)
-  // });
-//   console.log(lists);
 
-//   const lista = lists["colors"];
-//   console.log(lista);
-
-const devLocation = document.getElementById(location);
-devLocation.replaceChildren(...listObjects);
-}
-
-const createList = ()=>{
-  
 }
 
 // Usage examples:
