@@ -108,6 +108,7 @@ export const  List=(items = [], title = "", className = "")=> {
 
   addInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter" && addInput.value.trim()) {
+      
       currentItems.push(addInput.value.trim());
       addInput.value = "";
       renderItems();

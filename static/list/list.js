@@ -40,6 +40,10 @@ const devLocation = document.getElementById(location);
 devLocation.replaceChildren(...listObjects);
 }
 
+const createList = ()=>{
+  
+}
+
 // Usage examples:
 /*
 // Simple string array
