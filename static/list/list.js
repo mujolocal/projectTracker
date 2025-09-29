@@ -1,5 +1,6 @@
 import { List } from "./list_component.js";
 import { API_BASE } from "../utilities/constants.js";
+import { showPopup } from "../utilities/popup.js";
 
 
 const getLists =()=>{
@@ -18,8 +19,32 @@ const getLists =()=>{
       })
 
 }
-export const createList =()=>{
-  console.log("create list");
+export function createList() {
+    let newList = {}
+    newList.name = prompt('List name:');
+    if(!newList.name){
+      return;
+    }
+    let item = prompt('would you like to add items to the list. :');
+    while (item) {
+      if(newList.items){
+        newList.items.push(item);
+      }else{
+        newList.items = [item];
+      }
+    }
+        fetch(`${API_BASE}/list`,{
+            method: "POST"
+            ,headers:{"Content-Type":"application/json"}
+            , body:JSON.stringify(newList)
+        }).then((r)=>{
+            showPopup('success', 'Your List Has been created', 'good for you');
+        }).catch((e)=>{
+            showPopup('error', 'Something failed:', `${e}`);
+        })
+    renderIndependentTasksList()   
+        
+    
 }
 export const showList= async (location)=>{
   const listObjects =[]
