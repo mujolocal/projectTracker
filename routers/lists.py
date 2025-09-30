@@ -42,7 +42,7 @@ class ListItem(BaseModel):
 
 class ListItemCollection(BaseModel):
     name: str
-    listItems: List[ListItem]
+    listItems: Optional[List[ListItem]]
 
 @router.post("/list", status_code=201)
 def createList(list_item_collection:ListItemCollection):

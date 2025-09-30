@@ -22,15 +22,16 @@ const getLists =()=>{
 export function createList() {
     let newList = {}
     newList.name = prompt('List name:');
+    newList.listItems = [];
     if(!newList.name){
       return;
     }
     let item = prompt('would you like to add items to the list. :');
     while (item) {
-      if(newList.items){
-        newList.items.push(item);
+      if(newList.listItems){
+        newList.listItems.push(item);
       }else{
-        newList.items = [item];
+        newList.listItems = [item];
       }
     }
         fetch(`${API_BASE}/list`,{
@@ -42,7 +43,6 @@ export function createList() {
         }).catch((e)=>{
             showPopup('error', 'Something failed:', `${e}`);
         })
-    renderIndependentTasksList()   
         
     
 }
