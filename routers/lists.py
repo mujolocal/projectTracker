@@ -35,7 +35,7 @@ def init_list_tables():
 init_list_tables()
 
 class ListItem(BaseModel):
-    list_item_collection_key: Optional[int]
+    list_id: Optional[int]
     name: str
 
 
@@ -43,6 +43,10 @@ class ListItem(BaseModel):
 class ListItemCollection(BaseModel):
     name: str
     listItems: Optional[List[ListItem]]
+
+
+
+
 
 @router.post("/list", status_code=201)
 def createList(list_item_collection:ListItemCollection):
@@ -63,6 +67,23 @@ def createList(list_item_collection:ListItemCollection):
     finally:
         cursor.close()
         conn.close()
+
+@router.post("/list/item", status_code=201)
+def addListItem(item:ListItem):
+    recurranceId =0
+    conn = getDbConnection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(""" INSERT INTO list_item(name,list_collection_id ) VALUES(?, ?)""",[item.name, item.list_id])
+        conn.commit()
+        recurranceId = cursor.lastrowid
+    except Exception:
+        type, value, traceback = sys.exc_info()
+        raise HTTPException(status_code=500, detail=f"Error: {type} \n{value} \n{traceback}")
+    finally:
+        cursor.close()
+        conn.close()
+    return JSONResponse(content={"item_id":recurranceId}, status_code=200)
     
     
 @router.get("/list",  status_code=200)
@@ -76,8 +97,8 @@ def getLists():
             key = item["list name"]
             print(f"the key is: {key}")
             entry = {
-                "dict_id":item["list id"],
-                "id": item["id"],
+                "list_id":item["list id"],
+                "item_id": item["id"],
                 "name": item["name"]
             }
             if key in listDict:

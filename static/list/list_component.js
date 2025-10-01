@@ -1,4 +1,7 @@
-export const  List=(items = [], title = "", className = "")=> {
+import { API_BASE } from "../utilities/constants.js";
+import { showPopup } from "../utilities/popup.js";
+
+export const  List=(items = [], title = "", className = "", list_id=0)=> {
   const container = document.createElement("div");
   container.className = `list ${className}`;
  
@@ -15,6 +18,8 @@ export const  List=(items = [], title = "", className = "")=> {
 
   // Keep track of current items
   let currentItems = [...items];
+  list_id = currentItems[0]["list_id"];
+  // console.log("this is a thing", list_id);
   let isCollapsed = false;
 
   // Header container for title and buttons
@@ -108,17 +113,39 @@ export const  List=(items = [], title = "", className = "")=> {
 
   addInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter" && addInput.value.trim()) {
+      if(list_id == 0){
+        throw new Error(`HTTP error: list not identified.`);
+      }
+
+      fetch(`${API_BASE}/list/item`,{
+            method: "POST"
+            ,headers:{"Content-Type":"application/json"}
+            , body:JSON.stringify({"name":addInput.value, "list_id":list_id})
+        }).then((r)=>r.json)
+        .then((r)=>{
+          // if (!r.ok) {
+          //   throw new Error(`HTTP error: ${r.status}`);
+          // }
+          const a = r.json();
+          console.log(a);
+          console.log("*************");
+          const item_id = r.item_id;
+          currentItems.push({"item_id":a.item_id,"name":addInput.value});
+          
+          renderItems();
+          updateEmptyState();
+          addInput.value = "";
+          showPopup('success', 'Your List Item Has been created', 'good for you');
+        }).catch((e)=>{
+            showPopup('error', 'Something failed:', `${e}`);
+        });
       
-      currentItems.push(addInput.value.trim());
-      addInput.value = "";
-      renderItems();
-      updateEmptyState();
+      console.log(addInput.value);
     }
   });
 
   container.appendChild(addInput);
 
-  // Content container (what gets hidden/shown)
   const contentContainer = document.createElement("div");
   contentContainer.className = "list-content";
   
@@ -133,7 +160,7 @@ export const  List=(items = [], title = "", className = "")=> {
   // Function to render items
   function renderItems() {
     listContainer.innerHTML = "";
-    
+    console.log(currentItems);
     currentItems.forEach((item, index) => {
       const listItem = document.createElement("li");
       listItem.className = "list-item";
