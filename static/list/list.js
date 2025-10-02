@@ -28,11 +28,17 @@ export function createList() {
     }
     let item = prompt('would you like to add items to the list. (leave empty to stop) :');
     while (item) {
+
+
       item = prompt("Item name (leave empty to stop)");
       if(newList.listItems){
-        newList.listItems.push(item);
+        if(item!==""){
+          newList.listItems.push({"name":item, "list_id":0, "item_id":0});
+        }
       }else{
-        newList.listItems = [item];
+        if(item!==""){
+          newList.listItems = [{"name":item, "list_id":0, "item_id":0}];
+        }
       }
     }
         fetch(`${API_BASE}/list`,{
