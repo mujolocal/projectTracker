@@ -52,10 +52,9 @@ export const showList= async (location)=>{
   getLists().then((r)=>{
     Object.entries(r).forEach(([key, items])=>{
       listObjects.push(List(items, key, key))
-      const devLocation = document.getElementById(location);
-      devLocation.replaceChildren(...listObjects);
     })
-
+    const devLocation = document.getElementById(location);
+      devLocation.replaceChildren(...listObjects);
   });
 
 }
