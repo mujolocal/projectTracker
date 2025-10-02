@@ -7,10 +7,20 @@ This project is basically my own personalized application, made for my brain. If
 Coming Soon **in no specific order** :
 1. notes -- added 9/18/2025 --
 2. projects
-3. lists
+3. lists -- 
 4. notifications
-5. reucurring tasks
+5. reucurring tasks -- added 9/24/2025
 6. Authentication -- maybe never --
+7. Testing
+8. Ordering
+9. Searching
+10. journal
+
+#### things that have come up
+1. due to reccuring task imp gamification and tracking has become possible
+2. add visual indication that a task is a recurring task
+3. different dashboards. work, life, food???
+4. something who knows
 
 ### Stack
 Python3
@@ -19,6 +29,7 @@ SQLite
 JavaScript
 HTML
 CSS
+
 
 ###  Setup
 

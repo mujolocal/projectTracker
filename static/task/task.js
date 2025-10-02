@@ -9,6 +9,11 @@ let currentRecordId = null;
 let independentTasks = [];
 let taskName = "";
 
+export const showTask =()=>{
+
+  console.log("show task");
+}
+
 export const  openTaskUpdateForm=( id)=> {
   if(id){  
     fetch(`${API_BASE}/task/${id}`)
@@ -147,12 +152,12 @@ export function createTask() {
             ,headers:{"Content-Type":"application/json"}
             , body:JSON.stringify(newTask)
         }).then((r)=>{
-            showPopup('success', 'Your project has been created. now go get it done', 'good for you');
-            getIndependentTasks().then(()=>renderIndependentTasksList())
+            showPopup('success', 'Your Task has been created', 'now you should probably start it!');
+            // getIndependentTasks().then(()=>renderIndependentTasksList())
         }).catch((e)=>{
             showPopup('error', 'Something failed:', `${e}`);
         })
-    renderIndependentTasksList()   
+    // renderIndependentTasksList()   
         
     }
 }

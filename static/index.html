@@ -18,12 +18,18 @@
             </header>
 
             <div class="controls">
-                <button class="btn" id="newTaskButton">
-                    ➕ New Task
-                </button>
                 <button class="btn" id="refreshButton">
-                    🔄 Refresh
+                    🔄Refresh
                 </button>
+                <div class="combo-button">
+                    <button class="combo-button-left" id="showTasksButton">Show Tasks</button>
+                    <button class="combo-button-right" id="newTaskButton">➕</button>
+                </div>
+                
+                <div class="combo-button">
+                    <button class="combo-button-left" id="showListsButton">Show Lists</button>
+                    <button class="combo-button-right" id="newListButton">➕</button>
+                </div>
                 
             </div>
             <div id="independent-tasks-container">
@@ -92,10 +98,7 @@
                                         <option value="daily">Daily</option>
                                     </select>
                                 </div>
-                                <!-- TODO: the occurances will have two other features, 
-                                 frequency type, so if its weekly, 1 every, 2 every other 
-                                 week, day so for monthly its like 1 and for weekly it 
-                                 like wednesday -->
+
                             </div>
 
                             <div class="form-group full-width">
