@@ -3,4 +3,4 @@ __pycache__/
 **/taskTracker.db
 venv/
 env/
-static\utilities\constants.js
+static/tilities/constants.js
