@@ -26,8 +26,9 @@ export function createList() {
     if(!newList.name){
       return;
     }
-    let item = prompt('would you like to add items to the list. :');
+    let item = prompt('would you like to add items to the list. (leave empty to stop) :');
     while (item) {
+      item = prompt("Item name (leave empty to stop)");
       if(newList.listItems){
         newList.listItems.push(item);
       }else{

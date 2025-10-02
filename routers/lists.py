@@ -36,21 +36,15 @@ init_list_tables()
 
 class ListItem(BaseModel):
     list_id: Optional[int]
-    name: str
-
-
+    name: Optional[str]
+    item_id: Optional[int]
 
 class ListItemCollection(BaseModel):
     name: str
     listItems: Optional[List[ListItem]]
 
-
-
-
-
 @router.post("/list", status_code=201)
 def createList(list_item_collection:ListItemCollection):
-    print(list_item_collection)
     conn = getDbConnection()
     cursor = conn.cursor()
     try:
@@ -70,21 +64,35 @@ def createList(list_item_collection:ListItemCollection):
 
 @router.post("/list/item", status_code=201)
 def addListItem(item:ListItem):
-    recurranceId =0
+    itemId =0
     conn = getDbConnection()
     cursor = conn.cursor()
     try:
         cursor.execute(""" INSERT INTO list_item(name,list_collection_id ) VALUES(?, ?)""",[item.name, item.list_id])
         conn.commit()
-        recurranceId = cursor.lastrowid
+        itemId = cursor.lastrowid
     except Exception:
         type, value, traceback = sys.exc_info()
         raise HTTPException(status_code=500, detail=f"Error: {type} \n{value} \n{traceback}")
     finally:
         cursor.close()
         conn.close()
-    return JSONResponse(content={"item_id":recurranceId}, status_code=200)
-    
+    return JSONResponse(content={"item_id":itemId}, status_code=200)
+
+@router.delete("/list/item", status_code=200)
+def deleteListItem(item:ListItem):
+    conn = getDbConnection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""DELETE FROM list_item WHERE id=? """,[item.item_id])
+        conn.commit()
+    except Exception:
+        type, value, traceback = sys.exc_info()
+        raise HTTPException(status_code=500, detail=f"Error: {type} \n{value} \n{traceback}")
+    finally:
+        cursor.close()
+        conn.close()
+    return JSONResponse(content={"message":"item removed"}, status_code=200)   
     
 @router.get("/list",  status_code=200)
 def getLists():
@@ -95,7 +103,6 @@ def getLists():
         listDict = {}
         for item in cursor.fetchall():
             key = item["list name"]
-            print(f"the key is: {key}")
             entry = {
                 "list_id":item["list id"],
                 "item_id": item["id"],
@@ -105,7 +112,6 @@ def getLists():
                 listDict[key].append(entry)
             else:
                 listDict[key] = [entry]
-        print(listDict)
 
         return JSONResponse(content=listDict, status_code=200)
     except Exception as e:
@@ -114,6 +120,8 @@ def getLists():
     finally:
         cursor.close()
         conn.close()
+
+
 
 @router.get("/list/{id}",  status_code=200)
 def getList():

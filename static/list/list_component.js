@@ -120,22 +120,13 @@ export const  List=(items = [], title = "", className = "", list_id=0)=> {
       fetch(`${API_BASE}/list/item`,{
             method: "POST"
             ,headers:{"Content-Type":"application/json"}
-            , body:JSON.stringify({"name":addInput.value, "list_id":list_id})
-        }).then((r)=>r.json)
+            , body:JSON.stringify({"item_id":0, "name":addInput.value, "list_id":list_id})
+        }).then((r)=>r.json())
         .then((r)=>{
-          // if (!r.ok) {
-          //   throw new Error(`HTTP error: ${r.status}`);
-          // }
-          const a = r.json();
-          console.log(a);
-          console.log("*************");
-          const item_id = r.item_id;
-          currentItems.push({"item_id":a.item_id,"name":addInput.value});
-          
+          currentItems.push({"item_id":r.item_id,"name":addInput.value, "list_id":list_id,});
           renderItems();
           updateEmptyState();
           addInput.value = "";
-          showPopup('success', 'Your List Item Has been created', 'good for you');
         }).catch((e)=>{
             showPopup('error', 'Something failed:', `${e}`);
         });
@@ -160,7 +151,6 @@ export const  List=(items = [], title = "", className = "", list_id=0)=> {
   // Function to render items
   function renderItems() {
     listContainer.innerHTML = "";
-    console.log(currentItems);
     currentItems.forEach((item, index) => {
       const listItem = document.createElement("li");
       listItem.className = "list-item";
@@ -186,6 +176,7 @@ export const  List=(items = [], title = "", className = "", list_id=0)=> {
 
       // Delete button for each item
       const deleteBtn = document.createElement("button");
+      deleteBtn.id = item["item_id"]
       deleteBtn.textContent = "×";
       Object.assign(deleteBtn.style, {
         background: "none",
@@ -215,9 +206,20 @@ export const  List=(items = [], title = "", className = "", list_id=0)=> {
 
       deleteBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        currentItems.splice(index, 1);
-        renderItems();
-        updateEmptyState();
+              fetch(`${API_BASE}/list/item`,{
+            method: "DELETE"
+            ,headers:{"Content-Type":"application/json"}
+            , body:JSON.stringify({"item_id":deleteBtn.id, "list_id":0, "name":""})
+        }).then((r)=>r.json())
+        .then((r)=>{
+          const item_id = deleteBtn.id;
+          currentItems = currentItems.filter(item => item.item_id !== +item_id);
+          renderItems();
+          updateEmptyState();
+        }).catch((e)=>{
+            showPopup('error', 'Something failed:', `${e}`);
+        });
+        
       });
 
       listItem.appendChild(deleteBtn);
