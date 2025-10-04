@@ -1,14 +1,4 @@
-function closeUpdateForm(event) {
-    if (event && event.target !== event.currentTarget && !event.target.classList.contains('popup-close')) {
-        return;
-    }
-    
-    document.getElementById('taskUpdateOverlay').classList.remove('show');
-    document.body.style.overflow = 'auto';
-    currentRecordId = null;
-    resetTaskButton();
-}
-
+import { API_BASE } from "../utilities/constants.js";
 export const createLoginForm = (location = "taskUpdateOverlay") => {
     console.log("the login form loaded")
   // outer div
@@ -45,7 +35,7 @@ export const createLoginForm = (location = "taskUpdateOverlay") => {
   userLabel.textContent = "Username";
   const userInput = document.createElement("input");
   userInput.type = "text";
-  userInput.id = "username";
+  userInput.id = "username-input";
   userInput.name = "username";
   userInput.className = "form-input";
   userInput.required = true;
@@ -62,7 +52,7 @@ export const createLoginForm = (location = "taskUpdateOverlay") => {
   passLabel.textContent = "Password";
   const passInput = document.createElement("input");
   passInput.type = "password";
-  passInput.id = "password";
+  passInput.id = "password-input";
   passInput.name = "password";
   passInput.className = "form-input";
   passInput.required = true;
@@ -107,3 +97,18 @@ export const createLoginForm = (location = "taskUpdateOverlay") => {
   document.getElementById('taskUpdateOverlay').classList.add('show');
   return loginDiv
 };
+
+export const requestToLogin =()=>{
+  const userName = document.getElementById("username-input").value;
+  const password = document.getElementById("password-input").value;
+  fetch(`${API_BASE}/auth/login`,{
+            method: "POST"
+            ,headers:{"Content-Type":"application/json"}
+            , body:JSON.stringify({"id":userName,"password": password, "email": ""})
+          })
+    .then((response)=> response.json())
+    .then((recordData)=>{ 
+        console.log(recordData);
+    });
+
+}

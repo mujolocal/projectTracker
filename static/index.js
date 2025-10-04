@@ -3,6 +3,7 @@ import {renderIndependentTasksList, getIndependentTasks} from './task/task.js';
 import { createTask, showTask } from './task/task.js';
 import { createList, showList } from './list/list.js';
 import { createLoginForm } from './authentication/authentication.js';
+import { requestToLogin } from './authentication/authentication.js';
 // let tasks = [];
 
 const loadTasks = async()=> {
@@ -24,9 +25,10 @@ $(document).ready(function() {
         addClick('showListsButton', ()=>{showList("independent-tasks-container")});
         addClick("newListButton", createList );
         })
-    }
+    }else{
     createLoginForm();
-    
+    addClick("loginButton", requestToLogin  );
+    }
 });
 
 
