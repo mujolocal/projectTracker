@@ -3,12 +3,12 @@ import { addClick } from "../utilities/utilities.js";
 export const createTaskForm =(updateTask=()=>{},closeUpdateForm=()=>{}, location="taskUpdateOverlay")=>{
     // outer div
     const updateTaskDiv = document.createElement("div");
-    updateTaskDiv.className = "update-task";
+    updateTaskDiv.className = "form-card";
     updateTaskDiv.onclick = (event) => event.stopPropagation();
 
     // header
     const taskHeader = document.createElement("div");
-    taskHeader.className = "task-header";
+    taskHeader.className = "form-header";
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "task-close";

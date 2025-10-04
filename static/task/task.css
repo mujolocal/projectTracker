@@ -11,13 +11,15 @@
     flex-grow: 1;
     overflow: scroll;
 }
-.task-header {
+.form-header {
     background: linear-gradient(135deg, #2196F3, #1976D2);
     color: white;
     flex-grow: 1;
     padding: 25px;
     border-radius: 15px 15px 0 0;
     position: relative;
+    display: flex;
+    
 }
 .task-overlay {
     position: fixed;
@@ -39,7 +41,7 @@
 }
 
 /* Update Form task */
-.update-task {
+.form-card {
     display: flex;
     flex-direction: column;
     background: white;
@@ -52,7 +54,7 @@
     transition: all 0.3s ease;
 }
 
-.task-overlay.show .update-task {
+.task-overlay.show .form-card {
     transform: scale(1);
     animation: popIn 0.3s ease;
 }

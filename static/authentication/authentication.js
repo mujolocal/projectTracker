@@ -13,23 +13,18 @@ export const createLoginForm = (location = "taskUpdateOverlay") => {
     console.log("the login form loaded")
   // outer div
   const loginDiv = document.createElement("div");
-  loginDiv.className = "login-form";
+  loginDiv.className = "form-card";
   loginDiv.onclick = (event) => event.stopPropagation();
 
   // header
   const header = document.createElement("div");
   header.className = "form-header";
 
-  const closeBtn = document.createElement("button");
-  closeBtn.className = "form-close";
-  closeBtn.id = "loginFormXbutton";
-  closeBtn.innerHTML = "&times;";
-
   const title = document.createElement("h3");
   title.className = "form-title";
   title.textContent = "Login";
 
-  header.appendChild(closeBtn);
+//   header.appendChild(closeBtn);
   header.appendChild(title);
   loginDiv.appendChild(header);
 
@@ -103,11 +98,12 @@ export const createLoginForm = (location = "taskUpdateOverlay") => {
   loginBtn.appendChild(loginSpinner);
   loginBtn.appendChild(document.createTextNode(" Login"));
 
-  formActions.appendChild(cancelBtn);
   formActions.appendChild(loginBtn);
 
   loginDiv.appendChild(formActions);
 
   // replace target location
   document.getElementById(location).replaceChildren(loginDiv);
+  document.getElementById('taskUpdateOverlay').classList.add('show');
+  return loginDiv
 };

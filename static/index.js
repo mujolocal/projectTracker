@@ -4,10 +4,7 @@ import { createTask, showTask } from './task/task.js';
 import { createList, showList } from './list/list.js';
 import { createLoginForm } from './authentication/authentication.js';
 // let tasks = [];
-if (localStorage.getItem('access_token')) {
-    
-}
-createLoginForm();
+
 const loadTasks = async()=> {
     try {
         getIndependentTasks().then(()=>renderIndependentTasksList())
@@ -18,15 +15,19 @@ const loadTasks = async()=> {
 }
 
 $(document).ready(function() {
-    loadTasks();
+    if (localStorage.getItem('access_token')) {
+        loadTasks();
+        document.addEventListener('DOMContentLoaded', () => {
+        addClick("refreshButton", loadTasks);
+        addClick('showTasksButton', loadTasks);
+        addClick("newTaskButton", createTask );
+        addClick('showListsButton', ()=>{showList("independent-tasks-container")});
+        addClick("newListButton", createList );
+        })
+    }
+    createLoginForm();
+    
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    addClick("refreshButton", loadTasks);
-    addClick('showTasksButton', loadTasks);
-    addClick("newTaskButton", createTask );
-    addClick('showListsButton', ()=>{showList("independent-tasks-container")});
-    addClick("newListButton", createList );
 
-})
 
