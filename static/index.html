@@ -60,75 +60,7 @@
 
 
         <div id="taskUpdateOverlay" class="task-overlay" >
-            <div class="update-task" onclick="event.stopPropagation()">
-                <div class="task-header">
-                    <button class="task-close" id="updateFormXbutton">&times;</button>
-                    <h3 class="task-title">Update Task</h3>
-                </div>
-                
-                <div class="form-container">
-                    <form id="updateForm">
-                        <input type="hidden" id="taskId" name="id">
-                            
-                            <div class="form-group full-width">
-                                <label class="form-label required" for="recordName">Name</label>
-                                <input type="text" id="recordName" name="name" class="form-input" required maxlength="255" readonly>
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label class="form-label" for="recordDescription">Description</label>
-                                <textarea id="recordDescription" name="description" class="form-textarea" placeholder="Enter task description..." ></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="startDate">Start Date</label>
-                                <input type="date" id="startDate" name="start_date" class="form-input" >
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="endDate">End Date</label>
-                                <input type="date" id="endDate" name="end_date" class="form-input">
-                            </div>
-                            
-                            <div class="form-group-row full-width" style="display:none ;" id="recurringSection">
-                                <div style="display: flex; flex-direction: column; ">
-                                    <label class="form-label" for="recurrance">Recurrance: </label>
-                                    <select id="recurranceType" name="recurranceType" class="form-select">
-                                        <option value="" selected >None</option>
-                                        <option value="daily">Daily</option>
-                                    </select>
-                                </div>
-
-                            </div>
-
-                            <div class="form-group full-width">
-                                <label class="form-label" for="recordStatus">Status</label>
-                                <select id="recordStatus" name="status" class="form-select">
-                                    <option value="not_started">Not Started</option>
-                                    <option value="in_progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="on_hold">On Hold</option>
-                                    <option value="cancelled">Canceled</option>
-                                    <option value="failed">Failed</option>
-
-                                </select>
-                            </div>
-                            <div id="newNote"></div>
-                            <div id="notesSection"></div>
-                    </form>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" id="closeUpdateTaskButton" class="btn btn-danger" >
-                        <span class="loading-spinner" id="deleteSpinner"></span>
-                        Cancel
-                    </button>
-                    <button type="button" id="updateTaskButton" class="btn btn-primary">
-                        <span class="loading-spinner" id="updateSpinner"></span>
-                        Update Task
-                    </button>
-                </div>       
-            </div>
+           
             
         </div>
 

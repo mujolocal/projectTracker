@@ -1,9 +1,14 @@
 import {addClick} from './utilities/utilities.js';
 import {renderIndependentTasksList, getIndependentTasks} from './task/task.js';
-import { createTask, showTask } from './task/task.js';
 import { createList, showList } from './list/list.js';
+import { createLoginForm } from './authentication/authentication.js';
+import { openTaskForm } from './task/task.js';
+import { createTask } from './task/task.js';
 // let tasks = [];
-
+if (localStorage.getItem('access_token')) {
+    
+}
+createLoginForm();
 const loadTasks = async()=> {
     try {
         getIndependentTasks().then(()=>renderIndependentTasksList())
