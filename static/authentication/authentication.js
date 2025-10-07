@@ -110,4 +110,5 @@ export const createLoginForm = (location = "taskUpdateOverlay") => {
 
   // replace target location
   document.getElementById(location).replaceChildren(loginDiv);
+  document.getElementById('taskUpdateOverlay').classList.add('show');
 };
