@@ -13,7 +13,7 @@ export const createLoginForm = (location = "taskUpdateOverlay") => {
     console.log("the login form loaded")
   // outer div
   const loginDiv = document.createElement("div");
-  loginDiv.className = "login-form";
+  loginDiv.className = "update-task";
   loginDiv.onclick = (event) => event.stopPropagation();
 
   // header
