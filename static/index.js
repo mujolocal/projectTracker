@@ -6,9 +6,12 @@ import { openTaskForm } from './task/task.js';
 import { createTask } from './task/task.js';
 // let tasks = [];
 if (localStorage.getItem('access_token')) {
-    
+    $(document).ready(function() {
+    loadTasks();
+});
+}else{
+    createLoginForm();
 }
-createLoginForm();
 const loadTasks = async()=> {
     try {
         getIndependentTasks().then(()=>renderIndependentTasksList())
@@ -18,9 +21,7 @@ const loadTasks = async()=> {
     }
 }
 
-$(document).ready(function() {
-    loadTasks();
-});
+
 
 document.addEventListener('DOMContentLoaded', () => {
     addClick("refreshButton", loadTasks);
