@@ -88,6 +88,7 @@ export const getIndependentTasks = async()=>{
 
 
 export const  renderIndependentTasksList=()=> {
+    console.log("rendering tasks")
     const container = document.getElementById("independent-tasks-container");
     const tasks = independentTasks.map((task, index) => createTaskCard(task));
     container.replaceChildren(...tasks);

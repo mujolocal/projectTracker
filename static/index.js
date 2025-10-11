@@ -2,19 +2,19 @@ import {addClick} from './utilities/utilities.js';
 import {renderIndependentTasksList, getIndependentTasks} from './task/task.js';
 import { createList, showList } from './list/list.js';
 import { createLoginForm } from './authentication/authentication.js';
-import { openTaskForm } from './task/task.js';
 import { createTask } from './task/task.js';
 // let tasks = [];
 if (localStorage.getItem('access_token')) {
     $(document).ready(function() {
     loadTasks();
+    console.log("stuff");
 });
 }else{
-    createLoginForm();
+    createLoginForm(()=>{console.log("this fuction is from main")});
 }
 const loadTasks = async()=> {
     try {
-        getIndependentTasks().then(()=>renderIndependentTasksList())
+        getIndependentTasks().then(()=>{renderIndependentTasksList()});
         
     } catch (error) {
         console.error('Error loading projects:', error);

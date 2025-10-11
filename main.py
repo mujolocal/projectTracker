@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from routers import lists, tasks
+from routers import lists, tasks, auth
 import sqlite3
 import os
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -39,6 +39,7 @@ app.add_middleware(
 )
 app.include_router(tasks.router)
 app.include_router(lists.router)
+app.include_router(auth.router)
 
 
 async def check_schedule():

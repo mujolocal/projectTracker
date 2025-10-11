@@ -10,6 +10,12 @@ from typing import Optional
 
 router = APIRouter()
 
+class Auth(BaseModel):
+    name: str
+    password: str
+    email: Optional[str] = None
+
+
 def init_auth_tables():
     conn = getDbConnection()
     cursor = conn.cursor()
@@ -36,11 +42,6 @@ def init_auth_tables():
 
 init_auth_tables()
 
-class Auth(BaseModel):
-    name: str
-    password: str
-    email: Optional[str]
-
 
 @router.post("/auth/login", status_code=200)
 def login(auth: Auth):
@@ -55,7 +56,7 @@ def create(auth: Auth):
     conn = getDbConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id FROM auth WHERE id = ?", [auth.id])
+        cursor.execute("SELECT id FROM auth WHERE id = ?", [auth.name])
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="User already exists")
 

@@ -1,14 +1,11 @@
 import { API_BASE } from "../utilities/constants.js";
-
+let _completionFunction = ()=>{console.log("function complete")};
 function closeUpdateForm(event) {
     if (event && event.target !== event.currentTarget && !event.target.classList.contains('popup-close')) {
         return;
     }
-    
     document.getElementById('taskUpdateOverlay').classList.remove('show');
     document.body.style.overflow = 'auto';
-    currentRecordId = null;
-    resetTaskButton();
 }
 
 // function createUser(id, email, password) {
@@ -31,11 +28,18 @@ function loginUser(id, password) {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ id, password })
+    body: JSON.stringify({ "name":id, password })
   })
     .then(res => {
       if (!res.ok) return res.json().then(err => Promise.reject(err.detail || "Invalid credentials"));
-      return res.json();
+      res.json().then((r)=>{
+        localStorage.setItem('access_token',res.json().token)
+        closeUpdateForm();
+        _completionFunction();
+        console.log(res.json());
+        return res.json();
+      });
+      
     });
 }
 
@@ -48,8 +52,8 @@ const login =()=>{
 
 }
 
-export const createLoginForm = (location = "taskUpdateOverlay") => {
-
+export const createLoginForm = ( completionfunction = ()=>{console.log("login button pressed")}, location = "taskUpdateOverlay") => {
+    _completionFunction = completionfunction
   const loginDiv = document.createElement("div");
   loginDiv.className = "update-task";
   loginDiv.onclick = (event) => event.stopPropagation();
@@ -113,12 +117,13 @@ export const createLoginForm = (location = "taskUpdateOverlay") => {
   loginBtn.type = "submit";
   loginBtn.id = "loginButton";
   loginBtn.className = "btn btn-primary";
-  loginBtn.addEventListener("click", login)
   const loginSpinner = document.createElement("span");
   loginSpinner.className = "loading-spinner";
   loginSpinner.id = "loginSpinner";
   loginBtn.appendChild(loginSpinner);
   loginBtn.appendChild(document.createTextNode(" Login"));
+
+  loginBtn.addEventListener("click", login);
 
   formActions.appendChild(loginBtn);
 
