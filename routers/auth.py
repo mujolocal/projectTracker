@@ -131,19 +131,3 @@ def getToken(auth_id: str):
         cursor.close()
         conn.close()
 
-
-# def compareToken(auth: Auth):
-#     conn = getDbConnection()
-#     cursor = conn.cursor()
-#     try:
-#         cursor.execute("SELECT key FROM token WHERE auth_id = ?", [auth.id])
-#         row = cursor.fetchone()
-#         if not row:
-#             return False
-#         return str(auth.token) == str(row[0])
-#     except Exception:
-#         type_, value, tb = sys.exc_info()
-#         raise HTTPException(status_code=500, detail=f"Error: {type_}\n{value}\n{tb}")
-#     finally:
-#         cursor.close()
-#         conn.close()

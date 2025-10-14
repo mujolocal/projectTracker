@@ -4,9 +4,14 @@ import { showPopup } from "../utilities/popup.js";
 
 
 const getLists =()=>{
-  return fetch(`${API_BASE}/list`,{
-          method: "GET"
-      }).then((r)=>{
+  const access_name = localStorage.getItem('access_name'); 
+  const access_token = localStorage.getItem('access_token');
+  return fetch(`${API_BASE}/list`,{method: "GET",
+            headers:{
+              "Content-Type": "application/json",
+              "username": access_name,
+              "token": access_token
+            }}).then((r)=>{
           if(!r.ok){
               throw new Error("failed to update")
           }
@@ -21,6 +26,8 @@ const getLists =()=>{
 }
 export function createList() {
     let newList = {}
+    const access_name = localStorage.getItem('access_name'); 
+    const access_token = localStorage.getItem('access_token');
     newList.name = prompt('List name:');
     newList.listItems = [];
     if(!newList.name){
@@ -41,15 +48,18 @@ export function createList() {
         }
       }
     }
-        fetch(`${API_BASE}/list`,{
-            method: "POST"
-            ,headers:{"Content-Type":"application/json"}
-            , body:JSON.stringify(newList)
-        }).then((r)=>{
-            showPopup('success', 'Your List Has been created', 'good for you');
-        }).catch((e)=>{
-            showPopup('error', 'Something failed:', `${e}`);
-        })
+    fetch(`${API_BASE}/list`,{method: "POST",
+        headers:{
+          "Content-Type": "application/json",
+          "username": access_name,
+          "token": access_token
+        }
+        , body:JSON.stringify(newList)
+    }).then((r)=>{
+        showPopup('success', 'Your List Has been created', 'good for you');
+    }).catch((e)=>{
+        showPopup('error', 'Something failed:', `${e}`);
+    })
         
     
 }

@@ -2,6 +2,8 @@ import { API_BASE } from "../utilities/constants.js";
 import { showPopup } from "../utilities/popup.js";
 
 export const  List=(items = [], title = "", className = "", list_id=0)=> {
+  const access_name = localStorage.getItem('access_name'); 
+    const access_token = localStorage.getItem('access_token');
   const container = document.createElement("div");
   container.className = `list ${className}`;
  
@@ -117,13 +119,15 @@ export const  List=(items = [], title = "", className = "", list_id=0)=> {
         throw new Error(`HTTP error: list not identified.`);
       }
 
-      fetch(`${API_BASE}/list/item`,{
-            method: "POST"
-            ,headers:{"Content-Type":"application/json"}
-            , body:JSON.stringify({"item_id":0, "name":addInput.value, "list_id":list_id})
+      fetch(`${API_BASE}/list/item`,{method: "POST",
+            headers:{
+              "Content-Type": "application/json",
+              "username": access_name,
+              "token": access_token
+            }, body:JSON.stringify({"item_id":0, "name":addInput.value, "list_id":list_id})
         }).then((r)=>r.json())
         .then((r)=>{
-          currentItems.push({"item_id":r.item_id,"name":addInput.value, "list_id":list_id,});
+          currentItems.unshift({"item_id":r.item_id,"name":addInput.value, "list_id":list_id,});
           renderItems();
           updateEmptyState();
           addInput.value = "";
@@ -205,11 +209,20 @@ export const  List=(items = [], title = "", className = "", list_id=0)=> {
       });
 
       deleteBtn.addEventListener("click", (e) => {
+        const access_name = localStorage.getItem('access_name'); 
+        const access_token = localStorage.getItem('access_token');
+        if(intdeleteBtn.id == null){
+          console.log("this is a failure");
+          return;
+        }
+        const item_id = Number(intdeleteBtn.id)
         e.stopPropagation();
-              fetch(`${API_BASE}/list/item`,{
-            method: "DELETE"
-            ,headers:{"Content-Type":"application/json"}
-            , body:JSON.stringify({"item_id":deleteBtn.id, "list_id":0, "name":""})
+              fetch(`${API_BASE}/list/item`,{method: "DELETE",
+            headers:{
+              "Content-Type": "application/json",
+              "username": access_name,
+              "token": access_token
+            }, body:JSON.stringify({"item_id":item_id, "list_id":0, "name":""})
         }).then((r)=>r.json())
         .then((r)=>{
           const item_id = deleteBtn.id;

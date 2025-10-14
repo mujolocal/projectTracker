@@ -35,9 +35,9 @@ def init_list_tables():
 init_list_tables()
 
 class ListItem(BaseModel):
-    list_id: Optional[int]
-    name: Optional[str]
-    item_id: Optional[int]
+    list_id: Optional[int] =None
+    name: Optional[str] = None
+    item_id: Optional[int] = None
 
 class ListItemCollection(BaseModel):
     name: str
@@ -52,6 +52,7 @@ def createList(list_item_collection:ListItemCollection):
         listItemCollectionKey = cursor.lastrowid
         if(list_item_collection.listItems):
             listItems = list_item_collection.listItems
+            print("listItem: ", listItems)
             for listItem in listItems:
                 cursor.execute("""INSERT INTO list_item(name, list_collection_id) VALUES(?,?)""",[listItem.name, listItemCollectionKey] )
         conn.commit()

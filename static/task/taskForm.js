@@ -235,16 +235,20 @@ function closeUpdateForm(event) {
 }
 
 function updateTask(){
+    const access_name = localStorage.getItem('access_name'); 
+    const access_token = localStorage.getItem('access_token');
     let task = {
         taskId: document.getElementById('taskId').value,
         status: document.getElementById('recordStatus').value,
         newNote: document.getElementById('newNoteId').value,
         description: document.getElementById("recordDescription").value,
     };
-    fetch(`${API_BASE}/task`,{
-        method: "PUT"
-        ,headers:{"Content-Type":"application/json"}
-        , body:JSON.stringify(task)
+    fetch(`${API_BASE}/task`,{method: "PUT",
+            headers:{
+              "Content-Type": "application/json",
+              "username": access_name,
+              "token": access_token
+            }, body:JSON.stringify(task)
     }).then((r)=>{
         if(!r.ok){
             throw new Error("failed to update")
@@ -259,6 +263,8 @@ function updateTask(){
 // var newTask= {};
 export const  createTask=()=> {
     let newTask  = {};
+    const access_name = localStorage.getItem('access_name'); 
+    const access_token = localStorage.getItem('access_token');
     newTask.name = prompt('task name:');
     newTask.recurring = prompt('Is task recurring or would you like to add details (leave blank for no) :');
     if (newTask.name && newTask.recurring) {
@@ -267,10 +273,12 @@ export const  createTask=()=> {
     document.getElementById('taskUpdateOverlay').classList.add('show');
     document.getElementById('recordName').value = newTask.name;
     }else if(newTask.name){
-        fetch(`${API_BASE}/task`,{
-            method: "POST"
-            ,headers:{"Content-Type":"application/json"}
-            , body:JSON.stringify(newTask)
+        fetch(`${API_BASE}/task`,{method: "POST",
+            headers:{
+              "Content-Type": "application/json",
+              "username": access_name,
+              "token": access_token
+            }, body:JSON.stringify(newTask)
         }).then((r)=>{
             showPopup('success', 'Your Task has been created', 'now you should probably start it!');
 
