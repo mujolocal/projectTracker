@@ -29,15 +29,14 @@ function loginUser(id, password) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ "name":id, password })
-  })
-    .then(res => {
+  }).then(res => {
       if (!res.ok) return res.json().then(err => Promise.reject(err.detail || "Invalid credentials"));
-      res.json().then((r)=>{
-        localStorage.setItem('access_token',res.json().token)
+      return res.json().then((r)=>{
+        localStorage.setItem('access_token',r.token);
+        localStorage.setItem('access_name',id);
         closeUpdateForm();
         _completionFunction();
-        console.log(res.json());
-        return res.json();
+        return r;
       });
       
     });

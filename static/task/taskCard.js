@@ -5,9 +5,25 @@ import { Note } from '../note/note.js';
 
 export const  openTaskUpdateForm=( id)=> {
     createTaskForm()
+    const access_name = localStorage.getItem('access_token'); 
+    const access_token = localStorage.getItem('access_name');
     if(id){  
-        fetch(`${API_BASE}/task/${id}`)
-        .then((response)=> response.json())
+        fetch(`${API_BASE}/task/${id}`,
+          {method: "GET",
+            headers:{
+              "Content-Type": "application/json",
+              "username": access_name,
+              "token": access_token
+            }})
+        .then((response)=> {
+          if(response.ok){
+            return response.json();
+          }else{
+            // autologout
+          }
+        
+        }
+        )
         .then((recordData)=>{ 
         document.getElementById('recurranceType').value = ""
         document.getElementById('recurringSection').style.display = "none";

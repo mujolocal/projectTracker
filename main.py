@@ -1,19 +1,13 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Depends, Body
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from middleware.authMiddle import AuthMiddleware
 from routers import lists, tasks, auth
-import sqlite3
 import os
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-
 from utilities.utilities import DATABASE, getDbConnection
-
-# lists.init_list_tables()
-# tasks.init_task_tables()
-
 
 scheduler = AsyncIOScheduler()
 
@@ -35,8 +29,9 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "username", "token"], 
 )
+app.add_middleware(AuthMiddleware)
 app.include_router(tasks.router)
 app.include_router(lists.router)
 app.include_router(auth.router)

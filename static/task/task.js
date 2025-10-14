@@ -47,42 +47,17 @@ function closeUpdateForm(event) {
     resetTaskButton();
 }
 
-// function createFullTask(){
-//     let task = {
-//         name: document.getElementById("recordName").value,
-//         startDate: document.getElementById("startDate").value,
-//         endDate: document.getElementById("endDate").value,
-//         description: document.getElementById("recordDescription").value,
-//         status: document.getElementById('recordStatus').value,
-//         recurranceType: document.getElementById('recurranceType').value
-//     };
-//     fetch(`${API_BASE}/task`,{
-//         method: "POST"
-//         ,headers:{"Content-Type":"application/json"}
-//         , body:JSON.stringify(task)
-//     }).then((r)=>{
-//         if(!r.ok){
-//             throw new Error("failed to update")
-//         }
-//         showPopup('success', 'yay you updated the status of this thing', 'good for you');
-//         closeUpdateForm();
-
-//     }).catch((e)=>{
-//         showPopup('error', 'Something failed:', `${e}`);
-//     }).finally(()=>{
-//       // resetTaskButton()
-//     })
-// }
-
-// const resetTaskButton=()=>{
-//   const updateTaskButton =   document.getElementById("updateTaskButton");
-//       updateTaskButton.textContent = "Update Task";
-//       updateTaskButton.removeEventListener("click",createFullTask)
-//       updateTaskButton.addEventListener("click", updateTask);
-// }
 
 export const getIndependentTasks = async()=>{
-    const task_response = await fetch(`${API_BASE}/task`);
+    const access_name = localStorage.getItem('access_name'); 
+    const access_token = localStorage.getItem('access_token');
+
+    const task_response = await fetch(`${API_BASE}/task`,{method: "GET",
+            headers:{
+              "Content-Type": "application/json",
+              "username": access_name,
+              "token": access_token
+            }});
     independentTasks = await task_response.json();
 }
 

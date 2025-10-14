@@ -34,7 +34,7 @@ def init_auth_tables():
             key STRING,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             auth_id string,
-            FOREIGN KEY (auth_id) REFERENCES auth (id) ON DELETE CASCADE
+            FOREIGN KEY (auth_id) REFERENCES auth (name) ON DELETE CASCADE
             )
     """)
     conn.commit()
@@ -45,6 +45,7 @@ init_auth_tables()
 
 @router.post("/auth/login", status_code=200)
 def login(auth: Auth):
+    print("this is auth: ",auth)
     if doesUsernameMatchPass(auth):
         token = getToken(auth.name)
         return JSONResponse({"token": token}, 201)
@@ -56,7 +57,7 @@ def create(auth: Auth):
     conn = getDbConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id FROM auth WHERE id = ?", [auth.name])
+        cursor.execute("SELECT name FROM auth WHERE name = ?", [auth.name])
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="User already exists")
 
@@ -64,7 +65,7 @@ def create(auth: Auth):
         hashed_pw = bcrypt.hashpw(auth.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
         cursor.execute(
-            "INSERT INTO auth (id, email, password, active) VALUES (?, ?, ?, ?)",
+            "INSERT INTO auth (name, email, password, active) VALUES (?, ?, ?, ?)",
             (auth.name, auth.email, hashed_pw, 1)
         )
         conn.commit()
@@ -89,13 +90,16 @@ def doesUsernameMatchPass(auth: Auth):
     conn = getDbConnection()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT password FROM auth WHERE id = ?", [auth.name])
+        cursor.execute("SELECT password FROM auth WHERE name = ?", [auth.name])
         row = cursor.fetchone()
         if not row:
             return False
 
         stored_hash = row[0]
+        print("hash: ", stored_hash.encode("utf-8"))
+        print("hash: ",auth.password.encode("utf-8"))
         return bcrypt.checkpw(auth.password.encode("utf-8"), stored_hash.encode("utf-8"))
+        
 
     except Exception:
         type_, value, tb = sys.exc_info()

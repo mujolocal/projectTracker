@@ -10,7 +10,7 @@ if (localStorage.getItem('access_token')) {
     console.log("stuff");
 });
 }else{
-    createLoginForm(()=>{console.log("this fuction is from main")});
+    createLoginForm(()=>{loadTasks();});
 }
 const loadTasks = async()=> {
     try {
