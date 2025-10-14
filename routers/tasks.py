@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from utilities.utilities import getDbConnection
 from pydantic import BaseModel
@@ -24,6 +24,8 @@ def init_task_tables():
             status TEXT DEFAULT 'not_started',
             recurrance_id INTEGER,
             is_recurrance_template INTEGER DEFAULT 0
+            user_id string DEFAULT "muammar",
+            FOREIGN KEY (user_id) REFERENCES auth (name) ON DELETE CASCADE
         )
     """)
     
@@ -91,14 +93,15 @@ async def getTasks():
     return tasks
 
 @router.get("/task/{id}")
-async def getTask(id:int):
+async def getTask(id:int, request: Request):
+    username = request.headers.get("username")
     conn = None
     try:
         conn = getDbConnection()
         cursor = conn.cursor()
         cursor.execute("""SELECT task.id as id, task.name, task.description, task.start_date, task.status
                        FROM task 
-                       WHERE  task.id=:id""",{"id":id})
+                       WHERE  task.id=:id AND user_id=:user_id""",{"id":id, "user_id":username})
         task = cursor.fetchone()
         columns = [col[0] for col in cursor.description]
         task_dict = dict(zip(columns, task))

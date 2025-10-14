@@ -15,7 +15,9 @@ def init_list_tables():
         CREATE TABLE IF NOT EXISTS list_item_collection (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name STRING,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            user_id string DEFAULT "muammar",
+            FOREIGN KEY (user_id) REFERENCES auth (name) ON DELETE CASCADE
         )
     """)
 
